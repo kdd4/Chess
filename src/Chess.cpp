@@ -231,22 +231,22 @@ namespace Chess
         switch(newType)
         {
         case Figures::Type::Pawn:
-            newFigure = new Figures::Pawn(figure->pos, figure->color, figure->board, figure->moveCount, figure->lastMoveMoment, figure->deleted);
+            newFigure = new Figures::Pawn(figure->pos, figure->color, figure->board, figure->moveCount, figure->lastMoveMoment, figure->prevLastMoveMoment, figure->deleted);
             break;
         case Figures::Type::Rook:
-            newFigure = new Figures::Rook(figure->pos, figure->color, figure->board, figure->moveCount, figure->lastMoveMoment, figure->deleted);
+            newFigure = new Figures::Rook(figure->pos, figure->color, figure->board, figure->moveCount, figure->lastMoveMoment, figure->prevLastMoveMoment, figure->deleted);
             break;
         case Figures::Type::Knight:
-            newFigure = new Figures::Knight(figure->pos, figure->color, figure->board, figure->moveCount, figure->lastMoveMoment, figure->deleted);
+            newFigure = new Figures::Knight(figure->pos, figure->color, figure->board, figure->moveCount, figure->lastMoveMoment, figure->prevLastMoveMoment, figure->deleted);
             break;
         case Figures::Type::Bishop:
-            newFigure = new Figures::Bishop(figure->pos, figure->color, figure->board, figure->moveCount, figure->lastMoveMoment, figure->deleted);
+            newFigure = new Figures::Bishop(figure->pos, figure->color, figure->board, figure->moveCount, figure->lastMoveMoment, figure->prevLastMoveMoment, figure->deleted);
             break;
         case Figures::Type::Queen:
-            newFigure = new Figures::Queen(figure->pos, figure->color, figure->board, figure->moveCount, figure->lastMoveMoment, figure->deleted);
+            newFigure = new Figures::Queen(figure->pos, figure->color, figure->board, figure->moveCount, figure->lastMoveMoment, figure->prevLastMoveMoment, figure->deleted);
             break;
         case Figures::Type::King:
-            newFigure = new Figures::King(figure->pos, figure->color, figure->board, figure->moveCount, figure->lastMoveMoment, figure->deleted);
+            newFigure = new Figures::King(figure->pos, figure->color, figure->board, figure->moveCount, figure->lastMoveMoment, figure->prevLastMoveMoment, figure->deleted);
             break;
         default:
             throw excLogicalError();
