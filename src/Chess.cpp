@@ -111,7 +111,7 @@ namespace Chess
             return false;
         }
 
-        if (!checkMove(movingFigure, moving.attackedFigure, moving)) return false;
+        if (!checkMove(movingFigure, moving)) return false;
 
         // Making the move
         makeMove(moving);
@@ -143,7 +143,7 @@ namespace Chess
 
             for (Move& mv : moves)
             {
-                if (checkMove(enemyFigure, mv.attackedFigure, mv))
+                if (checkMove(enemyFigure, mv))
                 {
                     endGame = false;
                     break;
@@ -173,7 +173,7 @@ namespace Chess
         return true;
     }
 
-    bool Game::checkMove(Figure* movingFigure, Figure* attackedFigure, Move& moving)
+    bool Game::checkMove(Figure* movingFigure, Move& moving)
     {
         // Making the move
         makeMove(moving);
