@@ -28,8 +28,11 @@ namespace Chess
         Figures::Type (*getNewTypeWhite)();
         Figures::Type (*getNewTypeBlack)();
 
+        void makeMove(Move& moving);
+        void cancelMove(Move& moving);
+
         // Checking the possibility of making a move without changing the board
-        bool checkMove(Figure* movingFigure, Figure* attackedFigure, Move moving);
+        bool checkMove(Figure* movingFigure, Figure* attackedFigure, Move& moving);
 
         void updateFigure(Figure*& figure, Figures::Type newType);
     };

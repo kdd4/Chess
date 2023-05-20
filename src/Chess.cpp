@@ -38,6 +38,50 @@ namespace Chess
         return *this;
     }
 
+    void Game::makeMove(Move& moving)
+    {
+        if (moving.attackedFigure != nullptr) moving.attackedFigure->deleted = true;
+
+        Figure* figure = board->getFigure(moving.moving.figurePos);
+        if (figure != moving.moving.figure) throw excLogicalError();
+        figure->pos = moving.moving.newPos;
+        figure->prevLastMoveMoment = figure->lastMoveMoment;
+        figure->lastMoveMoment = board->moveCounter;
+        figure->moveCount += 1;
+
+        for (MoveEvent& event : moving.additionalMoving)
+        {
+            figure = board->getFigure(event.figurePos);
+            if (event.figure != figure) throw excLogicalError();
+            figure->pos = event.newPos;
+            figure->prevLastMoveMoment = figure->lastMoveMoment;
+            figure->lastMoveMoment = board->moveCounter;
+            figure->moveCount += 1;
+        }
+    }
+
+    void Game::cancelMove(Move& moving)
+    {
+        if (moving.attackedFigure != nullptr) moving.attackedFigure->deleted = false;
+
+        Figure* figure = board->getFigure(moving.moving.newPos);
+        if (figure != moving.moving.figure) throw excLogicalError();
+        figure->pos = moving.moving.figurePos;
+        figure->lastMoveMoment = figure->prevLastMoveMoment;
+        figure->prevLastMoveMoment = -1;
+        figure->moveCount -= 1;
+
+        for (MoveEvent& event : moving.additionalMoving)
+        {
+            figure = board->getFigure(event.newPos);
+            if (event.figure != figure) throw excLogicalError();
+            figure->pos = event.figurePos;
+            figure->lastMoveMoment = figure->prevLastMoveMoment;
+            figure->prevLastMoveMoment = -1;
+            figure->moveCount -= 1;
+        }
+    }
+
     bool Game::moving(Position pos1, Position pos2)
     {
         // Checking for correct positions
@@ -55,7 +99,7 @@ namespace Chess
         bool flFound = false;
         for (Move& mv : possibleMoves)
         {
-            if (mv.movePos == pos2)
+            if (mv.moving.newPos == pos2)
             {
                 moving = mv;
                 flFound = true;
@@ -67,40 +111,10 @@ namespace Chess
             return false;
         }
 
-        Figure* attackedFigure = nullptr;
-        if (moving.attackedPos.check()) attackedFigure = board->getFigure(moving.attackedPos);
-
-        if (!checkMove(movingFigure, attackedFigure, moving)) return false;
+        if (!checkMove(movingFigure, moving.attackedFigure, moving)) return false;
 
         // Making the move
-        if (attackedFigure != nullptr) attackedFigure->deleted = true;
-
-        movingFigure->pos = moving.movePos;
-        movingFigure->lastMoveMoment = board->moveCounter;
-        movingFigure->moveCount += 1;
-
-        if (movingFigure->type == Figures::Type::King)
-        {
-            Position posRook;
-            if (pos1.x - pos2.x == 2)
-            {
-                posRook = Position(0, pos1.y);
-                Figure* figRook = board->getFigure(posRook);
-                if (figRook == nullptr) throw excLogicalError();
-                if (figRook->type != Figures::Type::Rook || figRook->color != board->moveColor || figRook->moveCount != 0)
-                    throw excLogicalError();
-                figRook->pos = Position(pos1.x-1, pos1.y);
-            }
-            else if (pos2.x - pos1.x == 2)
-            {
-                posRook = Position(7, pos1.y);
-                Figure* figRook = board->getFigure(posRook);
-                if (figRook == nullptr) throw excLogicalError();
-                if (figRook->type != Figures::Type::Rook || figRook->color != board->moveColor || figRook->moveCount != 0)
-                    throw excLogicalError();
-                figRook->pos = Position(pos1.x+1, pos1.y);
-            }
-        }
+        makeMove(moving);
 
         if (movingFigure->type == Figures::Type::Pawn)
         {
@@ -129,9 +143,7 @@ namespace Chess
 
             for (Move& mv : moves)
             {
-                attackedFigure = nullptr;
-                if (mv.attackedPos.check()) attackedFigure = board->getFigure(mv.attackedPos);
-                if (checkMove(enemyFigure, attackedFigure, mv))
+                if (checkMove(enemyFigure, mv.attackedFigure, mv))
                 {
                     endGame = false;
                     break;
@@ -148,7 +160,8 @@ namespace Chess
             int result = Color::Both;
             for (Move& mv : ourMoves)
             {
-                if (enemyKing->pos == mv.attackedPos)
+                if (mv.attackedFigure == nullptr) continue;
+                if (enemyKing == mv.attackedFigure)
                 {
                     result = board->moveColor*(-1);
                     break;
@@ -160,45 +173,10 @@ namespace Chess
         return true;
     }
 
-    bool Game::checkMove(Figure* movingFigure, Figure* attackedFigure, Move moving)
+    bool Game::checkMove(Figure* movingFigure, Figure* attackedFigure, Move& moving)
     {
-        // Saving variables for canceling the move
-        int prevLastMoveMoment = movingFigure->lastMoveMoment;
-        Position pos1 = movingFigure->pos;
-        Position pos2 = moving.movePos;
-
         // Making the move
-        if (attackedFigure != nullptr) attackedFigure->deleted = true;
-
-        movingFigure->pos = moving.movePos;
-        movingFigure->lastMoveMoment = board->moveCounter;
-        movingFigure->moveCount += 1;
-
-        Figure* figRook = nullptr;
-        Position prevPosRook;
-        if (movingFigure->type == Figures::Type::King)
-        {
-            if (pos1.x - pos2.x == 2)
-            {
-                Position posRook = Position(0, pos1.y);
-                figRook = board->getFigure(posRook);
-                if (figRook == nullptr) throw excLogicalError();
-                if (figRook->type != Figures::Type::Rook || figRook->color != board->moveColor || figRook->moveCount != 0)
-                    throw excLogicalError();
-                prevPosRook = figRook->pos;
-                figRook->pos = Position(pos1.x-1, pos1.y);
-            }
-            else if (pos2.x - pos1.x == 2)
-            {
-                Position posRook = Position(7, pos1.y);
-                figRook = board->getFigure(posRook);
-                if (figRook == nullptr) throw excLogicalError();
-                if (figRook->type != Figures::Type::Rook || figRook->color != board->moveColor || figRook->moveCount != 0)
-                    throw excLogicalError();
-                prevPosRook = figRook->pos;
-                figRook->pos = Position(pos1.x+1, pos1.y);
-            }
-        }
+        makeMove(moving);
 
         Figure* prevFig = nullptr;
         if (movingFigure->type == Figures::Type::Pawn)
@@ -224,7 +202,7 @@ namespace Chess
         bool check = true;
         for (Move& mv : enemyMoves)
         {
-            if (ourKing->pos == mv.attackedPos)
+            if (ourKing == mv.attackedFigure)
             {
                 check = false;
                 break;
@@ -232,13 +210,8 @@ namespace Chess
         }
 
         // Canceling the move
-        if (attackedFigure != nullptr) attackedFigure->deleted = false;
+        cancelMove(moving);
 
-        movingFigure->pos = pos1;
-        movingFigure->lastMoveMoment = prevLastMoveMoment;
-        movingFigure->moveCount -= 1;
-
-        if (figRook != nullptr) figRook->pos = prevPosRook;
         if (prevFig != nullptr)
         {
             delete movingFigure;

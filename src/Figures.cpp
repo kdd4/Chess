@@ -2,49 +2,43 @@
 
 namespace Chess
 {
-    Figure::Figure(Position position, int color, Figures::Type type, Board* board, int moveCount, int lastMoveMoment, bool deleted)
-    : pos(position), color(color), lastMoveMoment(lastMoveMoment), moveCount(moveCount), deleted(deleted), board(board), type(type)
-    {}
-
-    Figure::~Figure() {};
-
     namespace Figures
     {
-        Pawn::Pawn(Position position, int color, Board* board, int moveCount, int lastMoveMoment, bool deleted) : Figure(position, color, Figures::Type::Pawn, board, moveCount, lastMoveMoment, deleted) {}
-        Rook::Rook(Position position, int color, Board* board, int moveCount, int lastMoveMoment, bool deleted) : Figure(position, color, Figures::Type::Rook, board, moveCount, lastMoveMoment, deleted) {}
-        Knight::Knight(Position position, int color, Board* board, int moveCount, int lastMoveMoment, bool deleted) : Figure(position, color, Figures::Type::Knight, board, moveCount, lastMoveMoment, deleted) {}
-        Bishop::Bishop(Position position, int color, Board* board, int moveCount, int lastMoveMoment, bool deleted) : Figure(position, color, Figures::Type::Bishop, board, moveCount, lastMoveMoment, deleted) {}
-        Queen::Queen(Position position, int color, Board* board, int moveCount, int lastMoveMoment, bool deleted) : Figure(position, color, Figures::Type::Queen, board, moveCount, lastMoveMoment, deleted) {}
-        King::King(Position position, int color, Board* board, int moveCount, int lastMoveMoment, bool deleted) : Figure(position, color, Figures::Type::King, board, moveCount, lastMoveMoment, deleted) {}
+        Pawn::Pawn(Position position, int color, Board* board, int moveCount, int lastMoveMoment, int prevLastMoveMoment, bool deleted) : Figure(position, color, Figures::Type::Pawn, board, moveCount, lastMoveMoment, prevLastMoveMoment, deleted) {}
+        Rook::Rook(Position position, int color, Board* board, int moveCount, int lastMoveMoment, int prevLastMoveMoment, bool deleted) : Figure(position, color, Figures::Type::Rook, board, moveCount, lastMoveMoment, prevLastMoveMoment, deleted) {}
+        Knight::Knight(Position position, int color, Board* board, int moveCount, int lastMoveMoment, int prevLastMoveMoment, bool deleted) : Figure(position, color, Figures::Type::Knight, board, moveCount, lastMoveMoment, prevLastMoveMoment, deleted) {}
+        Bishop::Bishop(Position position, int color, Board* board, int moveCount, int lastMoveMoment, int prevLastMoveMoment, bool deleted) : Figure(position, color, Figures::Type::Bishop, board, moveCount, lastMoveMoment, prevLastMoveMoment, deleted) {}
+        Queen::Queen(Position position, int color, Board* board, int moveCount, int lastMoveMoment, int prevLastMoveMoment, bool deleted) : Figure(position, color, Figures::Type::Queen, board, moveCount, lastMoveMoment, prevLastMoveMoment, deleted) {}
+        King::King(Position position, int color, Board* board, int moveCount, int lastMoveMoment, int prevLastMoveMoment, bool deleted) : Figure(position, color, Figures::Type::King, board, moveCount, lastMoveMoment, prevLastMoveMoment, deleted) {}
 
         Figure* Pawn::clone(Board* board) const
         {
-            return new Pawn(this->pos, this->color, board, this->moveCount, this->lastMoveMoment, this->deleted);
+            return new Pawn(this->pos, this->color, board, this->moveCount, this->lastMoveMoment, this->prevLastMoveMoment, this->deleted);
         }
 
         Figure* Rook::clone(Board* board) const
         {
-            return new Rook(this->pos, this->color, board, this->moveCount, this->lastMoveMoment, this->deleted);
+            return new Rook(this->pos, this->color, board, this->moveCount, this->lastMoveMoment, this->prevLastMoveMoment, this->deleted);
         }
 
         Figure* Knight::clone(Board* board) const
         {
-            return new Knight(this->pos, this->color, board, this->moveCount, this->lastMoveMoment, this->deleted);
+            return new Knight(this->pos, this->color, board, this->moveCount, this->lastMoveMoment, this->prevLastMoveMoment, this->deleted);
         }
 
         Figure* Bishop::clone(Board* board) const
         {
-            return new Bishop(this->pos, this->color, board, this->moveCount, this->lastMoveMoment, this->deleted);
+            return new Bishop(this->pos, this->color, board, this->moveCount, this->lastMoveMoment, this->prevLastMoveMoment, this->deleted);
         }
 
         Figure* Queen::clone(Board* board) const
         {
-            return new Queen(this->pos, this->color, board, this->moveCount, this->lastMoveMoment, this->deleted);
+            return new Queen(this->pos, this->color, board, this->moveCount, this->lastMoveMoment, this->prevLastMoveMoment, this->deleted);
         }
 
         Figure* King::clone(Board* board) const
         {
-            return new King(this->pos, this->color, board, this->moveCount, this->lastMoveMoment, this->deleted);
+            return new King(this->pos, this->color, board, this->moveCount, this->lastMoveMoment, this->prevLastMoveMoment, this->deleted);
         }
 
         void Pawn::getMoves(std::vector<Move>& vec, bool onlyAttack) const
@@ -55,14 +49,14 @@ namespace Chess
             const Figure* figure = board->getFigure(movePos);
             if (figure == nullptr && !onlyAttack)
             {
-                vec.push_back(Move(movePos, Position()));
-                if (this->lastMoveMoment == -1 && (pos.y+color*2 < 8 && pos.y+color*2 >= 0))
+                vec.push_back(Move(this, movePos, nullptr));
+                movePos = Position(pos.x, pos.y+color*2);
+                if (this->lastMoveMoment == -1 && movePos.check())
                 {
-                    movePos = Position(pos.x, pos.y+color*2);
                     figure = board->getFigure(movePos);
                     if (figure == nullptr)
                     {
-                        vec.push_back(Move(movePos, Position()));
+                        vec.push_back(Move(this, movePos, nullptr));
                     }
                 }
             }
@@ -75,7 +69,7 @@ namespace Chess
                 {
                     if (figure->color != color)
                     {
-                        vec.push_back(Move(movePos));
+                        vec.push_back(Move(this, movePos));
                     }
                 }
                 else
@@ -86,7 +80,7 @@ namespace Chess
                         if (figure->color != color && figure->type == Figures::Type::Pawn)
                         {
                             if (figure->moveCount == 1 && figure->lastMoveMoment+1 == board->moveCounter)
-                                vec.push_back(Move(Position(pos.x+1, pos.y+color), Position(pos.x+1, pos.y)));
+                                vec.push_back(Move(this, Position(pos.x+1, pos.y+color), Position(pos.x+1, pos.y)));
                         }
                     }
                 }
@@ -100,7 +94,7 @@ namespace Chess
                 {
                     if (figure->color != color)
                     {
-                        vec.push_back(Move(movePos));
+                        vec.push_back(Move(this, movePos));
                     }
                 }
                 else
@@ -111,7 +105,7 @@ namespace Chess
                         if (figure->color != color && figure->type == Figures::Type::Pawn)
                         {
                             if (figure->moveCount == 1 && figure->lastMoveMoment+1 == board->moveCounter)
-                                vec.push_back(Move(Position(pos.x-1, pos.y+color), Position(pos.x-1, pos.y)));
+                                vec.push_back(Move(this, Position(pos.x-1, pos.y+color), Position(pos.x-1, pos.y)));
                         }
                     }
                 }
@@ -128,10 +122,10 @@ namespace Chess
                 if (attackedFigure != nullptr)
                 {
                     if (attackedFigure->color != color)
-                        vec.push_back(Move(movePos));
+                        vec.push_back(Move(this, movePos));
                     break;
                 }
-                vec.push_back(Move(movePos));
+                vec.push_back(Move(this, movePos));
             }
 
             // X-
@@ -142,10 +136,10 @@ namespace Chess
                 if (attackedFigure != nullptr)
                 {
                     if (attackedFigure->color != color)
-                        vec.push_back(Move(movePos));
+                        vec.push_back(Move(this, movePos));
                     break;
                 }
-                vec.push_back(Move(movePos));
+                vec.push_back(Move(this, movePos));
             }
 
             // Y+
@@ -156,10 +150,10 @@ namespace Chess
                 if (attackedFigure != nullptr)
                 {
                     if (attackedFigure->color != color)
-                        vec.push_back(Move(movePos));
+                        vec.push_back(Move(this, movePos));
                     break;
                 }
-                vec.push_back(Move(movePos));
+                vec.push_back(Move(this, movePos));
             }
 
             // Y-
@@ -170,10 +164,10 @@ namespace Chess
                 if (attackedFigure != nullptr)
                 {
                     if (attackedFigure->color != color)
-                        vec.push_back(Move(movePos));
+                        vec.push_back(Move(this, movePos));
                     break;
                 }
-                vec.push_back(Move(movePos));
+                vec.push_back(Move(this, movePos));
             }
         }
 
@@ -189,10 +183,10 @@ namespace Chess
                 if (attackedFigure != nullptr)
                 {
                     if (attackedFigure->color != color)
-                        vec.push_back(Move(movePos));
+                        vec.push_back(Move(this, movePos));
                 }
                 else
-                    vec.push_back(Move(movePos));
+                    vec.push_back(Move(this, movePos));
             }
 
 
@@ -203,10 +197,10 @@ namespace Chess
                 if (attackedFigure != nullptr)
                 {
                     if (attackedFigure->color != color)
-                        vec.push_back(Move(movePos));
+                        vec.push_back(Move(this, movePos));
                 }
                 else
-                    vec.push_back(Move(movePos));
+                    vec.push_back(Move(this, movePos));
             }
 
             movePos = Position(pos.x-2, pos.y+1);
@@ -216,10 +210,10 @@ namespace Chess
                 if (attackedFigure != nullptr)
                 {
                     if (attackedFigure->color != color)
-                        vec.push_back(Move(movePos));
+                        vec.push_back(Move(this, movePos));
                 }
                 else
-                    vec.push_back(Move(movePos));
+                    vec.push_back(Move(this, movePos));
             }
 
             movePos = Position(pos.x-2, pos.y-1);
@@ -229,10 +223,10 @@ namespace Chess
                 if (attackedFigure != nullptr)
                 {
                     if (attackedFigure->color != color)
-                        vec.push_back(Move(movePos));
+                        vec.push_back(Move(this, movePos));
                 }
                 else
-                    vec.push_back(Move(movePos));
+                    vec.push_back(Move(this, movePos));
             }
 
             movePos = Position(pos.x+1, pos.y+2);
@@ -242,10 +236,10 @@ namespace Chess
                 if (attackedFigure != nullptr)
                 {
                     if (attackedFigure->color != color)
-                        vec.push_back(Move(movePos));
+                        vec.push_back(Move(this, movePos));
                 }
                 else
-                    vec.push_back(Move(movePos));
+                    vec.push_back(Move(this, movePos));
             }
 
             movePos = Position(pos.x+1, pos.y-2);
@@ -255,10 +249,10 @@ namespace Chess
                 if (attackedFigure != nullptr)
                 {
                     if (attackedFigure->color != color)
-                        vec.push_back(Move(movePos));
+                        vec.push_back(Move(this, movePos));
                 }
                 else
-                    vec.push_back(Move(movePos));
+                    vec.push_back(Move(this, movePos));
             }
 
             movePos = Position(pos.x-1, pos.y+2);
@@ -268,10 +262,10 @@ namespace Chess
                 if (attackedFigure != nullptr)
                 {
                     if (attackedFigure->color != color)
-                        vec.push_back(Move(movePos));
+                        vec.push_back(Move(this, movePos));
                 }
                 else
-                    vec.push_back(Move(movePos));
+                    vec.push_back(Move(this, movePos));
             }
 
             movePos = Position(pos.x-1, pos.y-2);
@@ -281,10 +275,10 @@ namespace Chess
                 if (attackedFigure != nullptr)
                 {
                     if (attackedFigure->color != color)
-                        vec.push_back(Move(movePos));
+                        vec.push_back(Move(this, movePos));
                 }
                 else
-                    vec.push_back(Move(movePos));
+                    vec.push_back(Move(this, movePos));
             }
         }
 
@@ -299,10 +293,10 @@ namespace Chess
                 if (attackedFigure != nullptr)
                 {
                     if (attackedFigure->color != color)
-                        vec.push_back(Move(movePos));
+                        vec.push_back(Move(this, movePos));
                     break;
                 }
-                vec.push_back(Move(movePos));
+                vec.push_back(Move(this, movePos));
             }
 
             // X+Y-
@@ -314,10 +308,10 @@ namespace Chess
                 if (attackedFigure != nullptr)
                 {
                     if (attackedFigure->color != color)
-                        vec.push_back(Move(movePos));
+                        vec.push_back(Move(this, movePos));
                     break;
                 }
-                vec.push_back(Move(movePos));
+                vec.push_back(Move(this, movePos));
             }
 
             // X-Y+
@@ -329,10 +323,10 @@ namespace Chess
                 if (attackedFigure != nullptr)
                 {
                     if (attackedFigure->color != color)
-                        vec.push_back(Move(movePos));
+                        vec.push_back(Move(this, movePos));
                     break;
                 }
-                vec.push_back(Move(movePos));
+                vec.push_back(Move(this, movePos));
             }
 
             // X-Y-
@@ -344,10 +338,10 @@ namespace Chess
                 if (attackedFigure != nullptr)
                 {
                     if (attackedFigure->color != color)
-                        vec.push_back(Move(movePos));
+                        vec.push_back(Move(this, movePos));
                     break;
                 }
-                vec.push_back(Move(movePos));
+                vec.push_back(Move(this, movePos));
             }
         }
 
@@ -361,10 +355,10 @@ namespace Chess
                 if (attackedFigure != nullptr)
                 {
                     if (attackedFigure->color != color)
-                        vec.push_back(Move(movePos));
+                        vec.push_back(Move(this, movePos));
                     break;
                 }
-                vec.push_back(Move(movePos));
+                vec.push_back(Move(this, movePos));
             }
 
             // X-
@@ -375,10 +369,10 @@ namespace Chess
                 if (attackedFigure != nullptr)
                 {
                     if (attackedFigure->color != color)
-                        vec.push_back(Move(movePos));
+                        vec.push_back(Move(this, movePos));
                     break;
                 }
-                vec.push_back(Move(movePos));
+                vec.push_back(Move(this, movePos));
             }
 
             // Y+
@@ -389,10 +383,10 @@ namespace Chess
                 if (attackedFigure != nullptr)
                 {
                     if (attackedFigure->color != color)
-                        vec.push_back(Move(movePos));
+                        vec.push_back(Move(this, movePos));
                     break;
                 }
-                vec.push_back(Move(movePos));
+                vec.push_back(Move(this, movePos));
             }
 
             // Y-
@@ -403,10 +397,10 @@ namespace Chess
                 if (attackedFigure != nullptr)
                 {
                     if (attackedFigure->color != color)
-                        vec.push_back(Move(movePos));
+                        vec.push_back(Move(this, movePos));
                     break;
                 }
-                vec.push_back(Move(movePos));
+                vec.push_back(Move(this, movePos));
             }
 
             // X+Y+
@@ -418,10 +412,10 @@ namespace Chess
                 if (attackedFigure != nullptr)
                 {
                     if (attackedFigure->color != color)
-                        vec.push_back(Move(movePos));
+                        vec.push_back(Move(this, movePos));
                     break;
                 }
-                vec.push_back(Move(movePos));
+                vec.push_back(Move(this, movePos));
             }
 
             // X+Y-
@@ -433,10 +427,10 @@ namespace Chess
                 if (attackedFigure != nullptr)
                 {
                     if (attackedFigure->color != color)
-                        vec.push_back(Move(movePos));
+                        vec.push_back(Move(this, movePos));
                     break;
                 }
-                vec.push_back(Move(movePos));
+                vec.push_back(Move(this, movePos));
             }
 
             // X-Y+
@@ -448,10 +442,10 @@ namespace Chess
                 if (attackedFigure != nullptr)
                 {
                     if (attackedFigure->color != color)
-                        vec.push_back(Move(movePos));
+                        vec.push_back(Move(this, movePos));
                     break;
                 }
-                vec.push_back(Move(movePos));
+                vec.push_back(Move(this, movePos));
             }
 
             // X-Y-
@@ -463,10 +457,10 @@ namespace Chess
                 if (attackedFigure != nullptr)
                 {
                     if (attackedFigure->color != color)
-                        vec.push_back(Move(movePos));
+                        vec.push_back(Move(this, movePos));
                     break;
                 }
-                vec.push_back(Move(movePos));
+                vec.push_back(Move(this, movePos));
             }
         }
 
@@ -482,32 +476,33 @@ namespace Chess
                     if (attackedFigure != nullptr)
                     {
                         if (attackedFigure->color != color)
-                            vec.push_back(Move(movePos));
+                            vec.push_back(Move(this, movePos));
                     }
                     else
-                        vec.push_back(Move(movePos));
+                        vec.push_back(Move(this, movePos));
                 }
             }
 
             if (moveCount != 0) return;
+
             if (!onlyAttack)
             {
-                if (LeftCastling()) vec.push_back(Move(Position(pos.x-2, pos.y), Position()));
-                if (RightCastling()) vec.push_back(Move(Position(pos.x+2, pos.y), Position()));
+                LeftCastling(vec);
+                RightCastling(vec);
             }
         }
 
-        bool King::LeftCastling() const
+        void King::LeftCastling(std::vector<Move>& vec) const
         {
-            if (moveCount != 0) return false;
+            if (moveCount != 0) return;
 
-            Figure* figure = board->getFigure(Position(0, pos.y));
-            if (figure == nullptr) return false;
-            if (figure->type != Figures::Type::Rook || figure->color != color || figure->moveCount != 0) return false;
+            Figure* figureRook = board->getFigure(Position(0, pos.y));
+            if (figureRook == nullptr) return;
+            if (figureRook->type != Figures::Type::Rook || figureRook->color != color || figureRook->moveCount != 0) return;
 
             for (int x = pos.x-1; x > 0; --x)
             {
-                if (board->getFigure(Position(x, pos.y)) != nullptr) return false;
+                if (board->getFigure(Position(x, pos.y)) != nullptr) return;
             }
 
             Position pos1 = Position(pos.x - 1, pos.y);
@@ -516,22 +511,26 @@ namespace Chess
             std::vector<Move> enemyMoves = board->getAllMoves(board->findFigures(Figures::Type::Null, color*(-1)), true);
             for (Move& mv : enemyMoves)
             {
-                if (pos1 == mv.attackedPos || pos2 == mv.attackedPos) return false;
+                if (mv.attackedFigure == nullptr) continue;
+                if (pos1 == mv.attackedFigure->pos || pos2 == mv.attackedFigure->pos) return;
             }
-            return true;
+
+            Move moving(this, Position(pos.x-2, pos.y), nullptr);
+            moving.addAdditionalMove(MoveEvent(figureRook, Position(pos.x-1, pos.y)));
+            vec.push_back(moving);
         }
 
-        bool King::RightCastling() const
+        void King::RightCastling(std::vector<Move>& vec) const
         {
-            if (moveCount != 0) return false;
+            if (moveCount != 0) return;
 
-            Figure* figure = board->getFigure(Position(7, pos.y));
-            if (figure == nullptr) return false;
-            if (figure->type != Figures::Type::Rook || figure->color != color || figure->moveCount != 0) return false;
+            Figure* figureRook = board->getFigure(Position(7, pos.y));
+            if (figureRook == nullptr) return;
+            if (figureRook->type != Figures::Type::Rook || figureRook->color != color || figureRook->moveCount != 0) return;
 
             for (int x = pos.x+1; x < 7; ++x)
             {
-                if (board->getFigure(Position(x, pos.y)) != nullptr) return false;
+                if (board->getFigure(Position(x, pos.y)) != nullptr) return;
             }
 
             Position pos1 = Position(pos.x + 1, pos.y);
@@ -540,9 +539,13 @@ namespace Chess
             std::vector<Move> enemyMoves = board->getAllMoves(board->findFigures(Figures::Type::Null, color*(-1)), true);
             for (Move& mv : enemyMoves)
             {
-                if (pos1 == mv.attackedPos || pos2 == mv.attackedPos) return false;
+                if (mv.attackedFigure == nullptr) continue;
+                if (pos1 == mv.attackedFigure->pos || pos2 == mv.attackedFigure->pos) return;
             }
-            return true;
+
+            Move moving(this, Position(pos.x+2, pos.y), nullptr);
+            moving.addAdditionalMove(MoveEvent(figureRook, Position(pos.x+1, pos.y)));
+            vec.push_back(moving);
         }
     }
 }

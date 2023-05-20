@@ -1,11 +1,19 @@
 #pragma once
 
-#include <vector>
+#include "Position.hpp"
 #include "Defines.hpp"
+
+#include "Figure.hpp"
 #include "Figures.hpp"
+
+#include <vector>
+
 
 namespace Chess
 {
+    class Figure;
+    struct Move;
+
     class Board
     {
     public:
