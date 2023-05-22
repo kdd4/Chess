@@ -29,3 +29,8 @@ set(SOURCES "src/Chess.cpp"
 include_directories("include/")
 
 add_library(ChessLib STATIC ${SOURCES} ${HEADERS})
+
+option(BUILD_EXAMPLES "Build examples" OFF)
+if(BUILD_EXAMPLES)
+	add_subdirectory(examples)
+endif()
