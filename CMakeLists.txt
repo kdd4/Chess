@@ -17,13 +17,13 @@ set(HEADERS "include/ChessLib/Chess.hpp"
 			"include/ChessLib/Defines.hpp"
 			)
 
-set(SOURCES "src/Chess.cpp"
-			"src/Board.cpp"
-			"src/Figure.cpp"
-			"src/Figures.cpp"
-			"src/Position.cpp"
-			"src/Move.cpp"
-			"src/Defines.cpp"
+set(SOURCES "src/ChessLib/Chess.cpp"
+			"src/ChessLib/Board.cpp"
+			"src/ChessLib/Figure.cpp"
+			"src/ChessLib/Figures.cpp"
+			"src/ChessLib/Position.cpp"
+			"src/ChessLib/Move.cpp"
+			"src/ChessLib/Defines.cpp"
 			)
 
 include_directories("include/")
