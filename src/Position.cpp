@@ -1,4 +1,4 @@
-#include "Chess/Position.hpp"
+#include "ChessLib/Position.hpp"
 
 namespace Chess
 {

@@ -1,4 +1,4 @@
-#include "Chess/Board.hpp"
+#include "ChessLib/Board.hpp"
 
 namespace Chess
 {
