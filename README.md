@@ -1,2 +1,2 @@
-# Chess
+# ChessLib
 Implementation of chess logic
