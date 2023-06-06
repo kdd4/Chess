@@ -3,15 +3,15 @@
 namespace Chess
 {
     Game::Game(Figures::Type (*getNewTypeWhite)(), Figures::Type (*getNewTypeBlack)())
-        : board(new Board()), getNewTypeWhite(getNewTypeWhite), getNewTypeBlack(getNewTypeBlack) {};
+        : board(new Board()), getNewTypeWhite(getNewTypeWhite), getNewTypeBlack(getNewTypeBlack) {}
 
     Game::Game(const Game& right)
-        : board(new Board(*right.board)), getNewTypeWhite(right.getNewTypeWhite), getNewTypeBlack(right.getNewTypeBlack) {};
+        : board(new Board(*right.board)), getNewTypeWhite(right.getNewTypeWhite), getNewTypeBlack(right.getNewTypeBlack) {}
 
     Game::~Game()
     {
         board->~Board();
-    };
+    }
 
     const Figure* Game::get(Position pos) const
     {

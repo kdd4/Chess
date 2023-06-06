@@ -13,5 +13,5 @@ namespace Chess
         type(type)
     {}
 
-    Figure::~Figure() {};
+    Figure::~Figure() {}
 }
