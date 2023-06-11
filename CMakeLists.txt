@@ -11,8 +11,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-Wall -Wpedantic")
 
 option(WARNINGS_AS_ERRORS "Warmings cause errors" OFF)
 if(WARNINGS_AS_ERRORS)
-	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Werror")
-	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Werror")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
 endif()
 
 project(ChessLib VERSION 1.0.0 LANGUAGES CXX)
