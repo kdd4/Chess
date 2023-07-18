@@ -7,7 +7,7 @@ namespace Chess
         y(-1)
     {}
 
-    Position::Position(short int x, short int y) :
+    Position::Position(int x, int y) :
         x(x),
         y(y)
     {}

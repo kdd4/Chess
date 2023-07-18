@@ -6,12 +6,8 @@
 
 #include <vector>
 
-
 namespace Chess
 {
-    class Figure;
-    class Board;
-
     struct MoveEvent
     {
         MoveEvent();

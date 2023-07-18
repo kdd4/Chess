@@ -5,10 +5,10 @@ namespace Chess
     struct Position
     {
         Position();
-        Position(short int x, short int y);
+        Position(int x, int y);
         Position(const Position& right);
-        short int x;
-        short int y;
+        int x;
+        int y;
 
         bool operator==(const Position& right) const;
         bool operator!=(const Position& right) const;
