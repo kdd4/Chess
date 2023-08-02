@@ -1,4 +1,4 @@
-#include "ChessLib/Figure.hpp"
+#include "ChessLib/IPiece.hpp"
 
 namespace Chess
 {

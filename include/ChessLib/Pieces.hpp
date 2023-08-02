@@ -1,8 +1,8 @@
 #pragma once
 
-#include "ChessLib/Figures/Pawn.hpp"
-#include "ChessLib/Figures/Rook.hpp"
-#include "ChessLib/Figures/Knight.hpp"
-#include "ChessLib/Figures/Bishop.hpp"
-#include "ChessLib/Figures/Queen.hpp"
-#include "ChessLib/Figures/King.hpp"
+#include "ChessLib/Pieces/Pawn.hpp"
+#include "ChessLib/Pieces/Rook.hpp"
+#include "ChessLib/Pieces/Knight.hpp"
+#include "ChessLib/Pieces/Bishop.hpp"
+#include "ChessLib/Pieces/Queen.hpp"
+#include "ChessLib/Pieces/King.hpp"

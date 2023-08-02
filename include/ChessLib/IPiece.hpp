@@ -7,15 +7,10 @@
 
 namespace Chess
 {
-    class Board;
-    struct Move;
-
-    class Figure
+    class Piece
     {
     public:
-        Figure(Position position, int color, Figures::Type type, Chess::Board* board, int moveCount, int lastMoveMoment, int prevLastMoveMoment, bool deleted);
-        virtual ~Figure();
-        virtual Figure* clone(Board* board) const = 0;
+        virtual Piece* clone(Board* board) const = 0;
         virtual void getMoves(std::vector<Move>& vec, bool onlyAttack = false) const = 0;
 
         Position pos;
