@@ -1,8 +1,8 @@
 #pragma once
 
+#include "IMove.hpp"
 #include "Position.hpp"
 #include "Board.hpp"
-#include "IMove.hpp"
 
 #include <map>
 
