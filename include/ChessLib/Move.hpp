@@ -1,34 +1,24 @@
 #pragma once
 
 #include "Position.hpp"
-#include "Figure.hpp"
 #include "Board.hpp"
+#include "IMove.hpp"
 
-#include <vector>
+#include <map>
 
 namespace Chess
 {
-    struct MoveEvent
+    class MoveImpl : public IMove
     {
-        MoveEvent();
-        MoveEvent(const Figure* figure, const Position& newPos);
+    public:
+        MoveImpl();
 
-        const Figure* figure;
-        Position figurePos;
-        Position newPos;
-    };
+        void make(Board*) override;
+        void cancel(Board*) override;
+        void append();
 
-    struct Move
-    {
-        Move();
-        Move(const Figure* figure, const Position& newPos);
-        Move(const Figure* figure, const Position& newPos, const Position& attackedPos);
-        Move(const Figure* figure, const Position& newPos, Figure* attackedFigure);
-
-        void addAdditionalMove(MoveEvent event);
-
-        Figure* attackedFigure;
-        MoveEvent moving;
-        std::vector<MoveEvent> additionalMoving;
+    private:
+        std::map<Position, Position> steps;
+        
     };
 }

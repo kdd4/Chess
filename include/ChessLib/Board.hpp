@@ -24,7 +24,7 @@ namespace Chess
         std::vector<Figure*>& getFigures();
         const std::vector<Figure*>& getFigures() const;
 
-        std::vector<Move> getAllMoves(const std::vector<Figure*>& vec, bool onlyAttack = false) const;
+        std::vector<Move> getAllMoves(const std::vector<Figure*>& vec, bool onlyAttack = false) const;  // вынести их
         std::vector<Figure*> findFigures(Figures::Type type, int color) const;
 
         int result;

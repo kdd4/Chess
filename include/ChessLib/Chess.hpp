@@ -29,7 +29,7 @@ namespace Chess
         Figures::Type (*getNewTypeWhite)();
         Figures::Type (*getNewTypeBlack)();
 
-        void makeMove(Move& moving);
+        void makeMove(Move& moving);    // Перенести в Move
         void cancelMove(Move& moving);
 
         // Checking the possibility of making a move without changing the board

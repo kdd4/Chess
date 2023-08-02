@@ -35,8 +35,7 @@ add_library(ChessLib STATIC ${SOURCES} ${HEADERS})
 target_include_directories(	ChessLib PUBLIC
 							${CMAKE_SOURCE_DIR}/include
 							)
-							
-							
+										
 option(BUILD_EXAMPLES "Build examples" ON)
 if(BUILD_EXAMPLES)
 	add_subdirectory(examples)
