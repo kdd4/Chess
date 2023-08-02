@@ -3,8 +3,8 @@
 namespace Chess
 {
     Position::Position() :
-        x(-1),
-        y(-1)
+        x(0),
+        y(0)
     {}
 
     Position::Position(int x, int y) :

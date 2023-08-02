@@ -8,10 +8,10 @@
 
 namespace Chess
 {
-    class MoveImpl : public IMove
+    class Move : public IMove
     {
     public:
-        MoveImpl();
+        Move();
 
         void make(Board*) override;
         void cancel(Board*) override;
