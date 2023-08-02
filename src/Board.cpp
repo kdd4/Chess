@@ -2,7 +2,10 @@
 
 namespace Chess
 {
-    Board::Board() : result(Color::Null), moveColor(Color::White), moveCounter(0), boardMap(new unsigned int*[8])
+    Board::Board()
+        :
+        IBoard(PieceColor::Null, PieceColor::White, 0),
+        boardMap(new unsigned int*[8])
     {
         for (int i = 0; i < 8; ++i)
         {
@@ -12,10 +15,10 @@ namespace Chess
                 this->boardMap[i][j] = 0;
             }
         }
-        setDefaultFigures();
+        setDefaultPieces();
     }
 
-    Board::Board(const Board& right) : result(right.result), moveColor(right.moveColor), moveCounter(right.moveCounter), boardMap(new unsigned int*[8])
+    Board::Board(const Board& right) : IBoard(right), boardMap(new unsigned int* [8])
     {
         for (int i = 0; i < 8; ++i)
         {
@@ -26,13 +29,13 @@ namespace Chess
             }
         }
 
-        figures.clear();
-        for (Figure* figure : right.figures)
+        pieces.clear();
+        for (IPiece* piece : right.pieces)
         {
-            if (figure == nullptr)
-                figures.push_back(figure);
+            if (piece == nullptr)
+                pieces.push_back(piece);
             else
-                figures.push_back(figure->clone(this));
+                pieces.push_back(piece->clone(this));
         }
         buildBoardMap();
     }
@@ -46,78 +49,61 @@ namespace Chess
         }
         delete[] this->boardMap;
 
-        for(Figure*& fig : this->figures)
+        for(IPiece*& piece : this->pieces)
         {
-            delete fig;
-            fig = nullptr;
+            delete piece;
+            piece = nullptr;
         }
     }
 
-    Figure*& Board::getFigure(const Position& pos)
+    IPieceable* Board::getPiece(const Position& pos) const
     {
-        return figures.at(boardMap[pos.y][pos.x]);
+        return pieces.at(boardMap[pos.y][pos.x]);
     }
 
-    const Figure*& Board::getFigure(const Position& pos) const
+    std::vector<IPiece*>& Board::getPieces()
     {
-        return const_cast<const Figure*&>(figures.at(boardMap[pos.y][pos.x]));
+        return pieces;
     }
 
-    std::vector<Figure*>& Board::getFigures()
+    const std::vector<IPiece*>& Board::getPieces() const
     {
-        return figures;
+        return pieces;
     }
 
-    const std::vector<Figure*>& Board::getFigures() const
+    std::vector<IPieceable*> Board::getPieces(PieceType type, PieceColor color) const
     {
-        return figures;
-    }
-
-    std::vector<Move> Board::getAllMoves(const std::vector<Figure*>& vec, bool onlyAttack) const
-    {
-        std::vector<Move> moves;
-        for (Figure* figure : vec)
+        std::vector<IPieceable*> vec;
+        for (IPieceable* piece : getPieces())
         {
-            if (figure == nullptr) continue;
-            if (figure->deleted) continue;
-            figure->getMoves(moves, onlyAttack);
-        }
-        return moves;
-    }
-
-    std::vector<Figure*> Board::findFigures(Figures::Type type, int color) const
-    {
-        std::vector<Figure*> vec;
-        for (Figure* figure : getFigures())
-        {
-            if (figure == nullptr) continue;
-            if (figure->deleted) continue;
-            if (color != figure->color && color != Color::Both) continue;
-            if (type != figure->type && type != Figures::Type::Null) continue;
-            vec.push_back(figure);
+            if (piece == nullptr) continue;
+            if (piece->deleted) continue;
+            if (color != piece->color && color != PieceColor::All) continue;
+            if (type != piece->type && type != PieceType::Null) continue;
+            vec.push_back(piece);
         }
         return vec;
     }
 
-    void Board::update()
+    void Board::updateMap()
     {
         clearBoardMap();
         buildBoardMap();
     }
 
-    void Board::addFigure(Figure* figure)
+    void Board::addPiece(IPiece* piece)
     {
-        figures.push_back(figure);
+        pieces.push_back(piece);
     }
 
     void Board::buildBoardMap()
     {
-        for (unsigned int i = 1; i < figures.size(); ++i)
+        for (unsigned int i = 1; i < pieces.size(); ++i)
         {
-            Figure* figure = figures.at(i);
-            if (figure->deleted) continue;
-            int x = figure->pos.x;
-            int y = figure->pos.y;
+            IPiece* piece = pieces.at(i);
+            if (piece->deleted) continue;
+            int x = piece->pos.x;
+            int y = piece->pos.y;
             this->boardMap[y][x] = i;
         }
     }
@@ -133,41 +119,41 @@ namespace Chess
         }
     }
 
-    void Board::clearFigures()
+    void Board::clearPieces()
     {
-        figures.clear();
-        figures.push_back(nullptr);
+        pieces.clear();
+        pieces.push_back(nullptr);
     }
 
-    void Board::setDefaultFigures()
+    void Board::setDefaultPieces()
     {
         clearBoardMap();
-        clearFigures();
+        clearPieces();
 
         for (int i = 0; i < 8; ++i)
         {
-            addFigure(new Figures::Pawn(Position(i, 1), Color::White, this));
+            addPiece(new Figures::Pawn(Position(i, 1), PieceColor::White, this));
 
-            addFigure(new Figures::Pawn(Position(i, 6), Color::Black, this));
+            addPiece(new Figures::Pawn(Position(i, 6), PieceColor::Black, this));
         }
 
-        addFigure(new Figures::Rook(Position(0, 0), Color::White, this));
-        addFigure(new Figures::Rook(Position(7, 0), Color::White, this));
-        addFigure(new Figures::Knight(Position(1, 0), Color::White, this));
-        addFigure(new Figures::Knight(Position(6, 0), Color::White, this));
-        addFigure(new Figures::Bishop(Position(2, 0), Color::White, this));
-        addFigure(new Figures::Bishop(Position(5, 0), Color::White, this));
-        addFigure(new Figures::Queen(Position(4, 0), Color::White, this));
-        addFigure(new Figures::King(Position(3, 0), Color::White, this));
+        addPiece(new Figures::Rook(Position(0, 0), PieceColor::White, this));
+        addPiece(new Figures::Rook(Position(7, 0), PieceColor::White, this));
+        addPiece(new Figures::Knight(Position(1, 0), PieceColor::White, this));
+        addPiece(new Figures::Knight(Position(6, 0), PieceColor::White, this));
+        addPiece(new Figures::Bishop(Position(2, 0), PieceColor::White, this));
+        addPiece(new Figures::Bishop(Position(5, 0), PieceColor::White, this));
+        addPiece(new Figures::Queen(Position(4, 0), PieceColor::White, this));
+        addPiece(new Figures::King(Position(3, 0), PieceColor::White, this));
 
-        addFigure(new Figures::Rook(Position(0, 7), Color::Black, this));
-        addFigure(new Figures::Rook(Position(7, 7), Color::Black, this));
-        addFigure(new Figures::Knight(Position(1, 7), Color::Black, this));
-        addFigure(new Figures::Knight(Position(6, 7), Color::Black, this));
-        addFigure(new Figures::Bishop(Position(2, 7), Color::Black, this));
-        addFigure(new Figures::Bishop(Position(5, 7), Color::Black, this));
-        addFigure(new Figures::Queen(Position(4, 7), Color::Black, this));
-        addFigure(new Figures::King(Position(3, 7), Color::Black, this));
+        addPiece(new Figures::Rook(Position(0, 7), PieceColor::Black, this));
+        addPiece(new Figures::Rook(Position(7, 7), PieceColor::Black, this));
+        addPiece(new Figures::Knight(Position(1, 7), PieceColor::Black, this));
+        addPiece(new Figures::Knight(Position(6, 7), PieceColor::Black, this));
+        addPiece(new Figures::Bishop(Position(2, 7), PieceColor::Black, this));
+        addPiece(new Figures::Bishop(Position(5, 7), PieceColor::Black, this));
+        addPiece(new Figures::Queen(Position(4, 7), PieceColor::Black, this));
+        addPiece(new Figures::King(Position(3, 7), PieceColor::Black, this));
 
         buildBoardMap();
     }

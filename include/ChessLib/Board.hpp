@@ -1,50 +1,47 @@
 #pragma once
 
-#include "Piece/Type.hpp"
-#include "Position.hpp"
+#include "ChessLib/Piece/Enums.hpp"
+#include "ChessLib/Position.hpp"
 
-#include "Piece/Pieces.hpp"
+#include "ChessLib/Piece/Pieces.hpp"
 
-#include "Piece/IPiece.hpp"
-#include "IMove.hpp"
+#include "ChessLib/IBoard.hpp"
+#include "ChessLib/Piece/IPiece.hpp"
+#include "ChessLib/Piece/IPieceable.hpp"
+#include "ChessLib/IMove.hpp"
 
 #include <vector>
 
 namespace Chess
 {
-    class Board
+    class Board : public IBoard
     {
     public:
         Board();
         Board(const Board& right);
         ~Board();
 
-        IPiece*& getFigure(const Position& pos);
-        const IPiece*& getFigure(const Position& pos) const;
+        std::vector<IPiece*>& Board::getPieces();
+        const std::vector<IPiece*>& Board::getPieces() const;
 
-        std::vector<IPiece*>& getFigures();
-        const std::vector<IPiece*>& getFigures() const;
+        IPieceable* getPiece(const Position& pos) const override;
+        std::vector<IPieceable*> getPieces(PieceType type, PieceColor color) const override;
 
-        std::vector<Move> getAllMoves(const std::vector<IPiece*>& vec, bool onlyAttack = false) const;  // вынести их
-        std::vector<IPiece*> findFigures(PieceType type, PieceColor color) const;
-
-        int result;
-        int moveColor;
-        int moveCounter;
-
-        void update();
+        void updatePieceType(const Position& pos, PieceType) override;
+        void updateMap() override;
+        void reset() override;
 
     private:
-        void addFigure(IPiece* figure);
+        void addPiece(IPiece* piece);
 
-        std::vector<IPiece*> figures = {nullptr};
+        std::vector<IPiece*> pieces = {nullptr};
 
         unsigned int** boardMap = nullptr;
         void buildBoardMap();
         void clearBoardMap();
-        void clearFigures();
+        void clearPieces();
 
-        void setDefaultFigures();
+        void setDefaultPieces();
     };
 }
 

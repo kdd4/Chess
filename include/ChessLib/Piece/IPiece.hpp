@@ -3,12 +3,12 @@
 #include "ChessLib/IMove.hpp"
 #include "ChessLib/IBoard.hpp"
 
-#include "ChessLib/Piece/Allocatable.hpp"
-#include "ChessLib/Piece/Pieceable.hpp"
+#include "ChessLib/Piece/IAllocatable.hpp"
+#include "ChessLib/Piece/IPieceable.hpp"
 
 namespace Chess
 {
-    class IPiece : public Allocatable, public Pieceable
+    class IPiece : public IAllocatable, public IPieceable
     {
     public:
         virtual IPiece* clone(IBoard* board) const = 0;

@@ -1,13 +1,16 @@
 #pragma once
 
-#include "ChessLib/Piece/Type.hpp"
+#include "ChessLib/Piece/Enums.hpp"
 
 #include <vector>
 
 namespace Chess
 {
-    class Pieceable
+    class IPieceable
     {
+    public:
+        Position pos;
+
         PieceType type = PieceType::Null;
         PieceColor color = PieceColor::Null;
 

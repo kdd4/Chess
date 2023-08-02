@@ -5,9 +5,9 @@
 
 namespace Chess
 {
-    class Allocatable
+    class IAllocatable
     {
+    public:
         IBoard* board;
-        Position pos;
     };
 }
