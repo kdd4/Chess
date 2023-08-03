@@ -8,6 +8,9 @@ namespace Chess
     class IAllocatable
     {
     public:
+        IAllocatable(IBoard* board);
+        IAllocatable(const IAllocatable& right);
+
         IBoard* board;
     };
 }

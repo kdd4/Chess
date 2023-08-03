@@ -1,19 +1,24 @@
 #pragma once
 
-#include "ChessLib/Figure.hpp"
+#include "ChessLib/Piece/IPiece.hpp"
 #include "ChessLib/Board.hpp"
-#include "ChessLib/Move.hpp"
+#include "ChessLib/IMove.hpp"
+
+#include <vector>
 
 namespace Chess
 {
-    namespace Figures
+    namespace Piece
     {
-        class Pawn : public Figure
+        class Pawn : public IPiece
         {
         public:
-            Pawn(Position position, int color, Board* board, int moveCount = 0, int lastMoveMoment = -1, int prevLastMoveMoment = -1, bool deleted = false);
-            Figure* clone(Board* board) const override final;
-            void getMoves(std::vector<Move>& vec, bool onlyAttack = false) const override final;
+            Pawn(Position pos, PieceColor color, IBoard* board);
+            Pawn(IPieceable* data, IAllocatable* loc);
+            Pawn(const IPiece& right);
+
+            IPiece* clone(IBoard* board) const override final;
+            void getMoves(std::vector<IMove&>& vec, bool onlyAttack = false) const override final;
         };
     }
 }

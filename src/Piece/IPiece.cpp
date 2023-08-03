@@ -1,17 +1,16 @@
-#include "ChessLib/IPiece.hpp"
+#include "ChessLib/Piece/IPiece.hpp"
 
 namespace Chess
 {
-    Figure::Figure(Position position, int color, Figures::Type type, Board* board, int moveCount, int lastMoveMoment, int prevLastMoveMoment, bool deleted) :
-        pos(position),
-        color(color),
-        lastMoveMoment(lastMoveMoment),
-        prevLastMoveMoment(prevLastMoveMoment),
-        moveCount(moveCount),
-        deleted(deleted),
-        board(board),
-        type(type)
+    IPiece::IPiece(IPieceable& pieceable, IAllocatable& allocatable)
+        :
+        IPieceable(pieceable),
+        IAllocatable(allocatable)
     {}
 
-    Figure::~Figure() {}
+    IPiece::IPiece(const IPiece& right)
+        :
+        IPieceable(right),
+        IAllocatable(right)
+    {}
 }

@@ -13,15 +13,15 @@ namespace Chess
 		IBoard(PieceColor result, PieceColor moveColor, int moveCounter);
 		IBoard(const IBoard& right);
 
-		PieceColor result;
-		PieceColor moveColor;
-		int moveCounter;
-
 		virtual IPieceable* getPiece(const Position& pos) const = 0;
 		virtual std::vector<IPieceable*> getPieces(PieceType type, PieceColor color) const = 0;
 
 		virtual void updatePieceType(const Position& pos, PieceType) = 0;
 		virtual void updateMap() = 0;
 		virtual void reset() = 0;
+
+		PieceColor result;
+		PieceColor moveColor;
+		int moveCounter;
 	};
 }

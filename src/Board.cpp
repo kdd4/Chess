@@ -12,13 +12,16 @@ namespace Chess
             this->boardMap[i] = new unsigned int[8];
             for (int j = 0; j < 8; ++j)
             {
-                this->boardMap[i][j] = 0;
+                this->boardMap[i][j] = -1;
             }
         }
-        setDefaultPieces();
+        reset();
     }
 
-    Board::Board(const Board& right) : IBoard(right), boardMap(new unsigned int* [8])
+    Board::Board(const Board& right)
+        :
+        IBoard(right),
+        boardMap(new unsigned int* [8])
     {
         for (int i = 0; i < 8; ++i)
         {
@@ -85,9 +88,91 @@ namespace Chess
         return vec;
     }
 
+    void Board::updatePieceType(const Position& pos, PieceType new_type)
+    {
+        int pieceid = boardMap[pos.x][pos.y];
+
+        if (pieceid == -1)
+            throw excLogicalError();
+
+        IPiece*& piece = pieces[pieceid];
+
+        if (piece == nullptr)
+            throw excLogicalError();
+
+        IPiece* new_piece;
+
+        switch (new_type)
+        {
+        case PieceType::Pawn:
+            new_piece = new Piece::Pawn(*piece);
+            break;
+
+        case PieceType::Rook:
+            new_piece = new Piece::Rook(*piece);
+            break;
+
+        case PieceType::Knight:
+            new_piece = new Piece::Knight(*piece);
+            break;
+
+        case PieceType::Bishop:
+            new_piece = new Piece::Bishop(*piece);
+            break;
+
+        case PieceType::Queen:
+            new_piece = new Piece::Bishop(*piece);
+            break;
+
+        case PieceType::King:
+            new_piece = new Piece::Bishop(*piece);
+            break;
+
+        default:
+            break;
+        }
+    }
+
     void Board::updateMap()
     {
         clearBoardMap();
+        buildBoardMap();
+    }
+
+    void Board::reset()
+    {
+        result = PieceColor::Null;
+        moveColor = PieceColor::White;
+        moveCounter = 0;
+
+        clearBoardMap();
+        clearPieces();
+
+        for (int i = 0; i < 8; ++i)
+        {
+            addPiece(new Piece::Pawn(Position(i, 1), PieceColor::White, this));
+
+            addPiece(new Piece::Pawn(Position(i, 6), PieceColor::Black, this));
+        }
+
+        addPiece(new Piece::Rook(Position(0, 0), PieceColor::White, this));
+        addPiece(new Piece::Rook(Position(7, 0), PieceColor::White, this));
+        addPiece(new Piece::Knight(Position(1, 0), PieceColor::White, this));
+        addPiece(new Piece::Knight(Position(6, 0), PieceColor::White, this));
+        addPiece(new Piece::Bishop(Position(2, 0), PieceColor::White, this));
+        addPiece(new Piece::Bishop(Position(5, 0), PieceColor::White, this));
+        addPiece(new Piece::Queen(Position(4, 0), PieceColor::White, this));
+        addPiece(new Piece::King(Position(3, 0), PieceColor::White, this));
+
+        addPiece(new Piece::Rook(Position(0, 7), PieceColor::Black, this));
+        addPiece(new Piece::Rook(Position(7, 7), PieceColor::Black, this));
+        addPiece(new Piece::Knight(Position(1, 7), PieceColor::Black, this));
+        addPiece(new Piece::Knight(Position(6, 7), PieceColor::Black, this));
+        addPiece(new Piece::Bishop(Position(2, 7), PieceColor::Black, this));
+        addPiece(new Piece::Bishop(Position(5, 7), PieceColor::Black, this));
+        addPiece(new Piece::Queen(Position(4, 7), PieceColor::Black, this));
+        addPiece(new Piece::King(Position(3, 7), PieceColor::Black, this));
+
         buildBoardMap();
     }
 
@@ -101,9 +186,11 @@ namespace Chess
         for (unsigned int i = 1; i < pieces.size(); ++i)
         {
             IPiece* piece = pieces.at(i);
+
             if (piece->deleted) continue;
             int x = piece->pos.x;
             int y = piece->pos.y;
+
             this->boardMap[y][x] = i;
         }
     }
@@ -114,7 +201,7 @@ namespace Chess
         {
             for (int j = 0; j < 8; ++j)
             {
-                boardMap[i][j] = 0;
+                boardMap[i][j] = -1;
             }
         }
     }
@@ -123,39 +210,6 @@ namespace Chess
     {
         pieces.clear();
         pieces.push_back(nullptr);
-    }
-
-    void Board::setDefaultPieces()
-    {
-        clearBoardMap();
-        clearPieces();
-
-        for (int i = 0; i < 8; ++i)
-        {
-            addPiece(new Figures::Pawn(Position(i, 1), PieceColor::White, this));
-
-            addPiece(new Figures::Pawn(Position(i, 6), PieceColor::Black, this));
-        }
-
-        addPiece(new Figures::Rook(Position(0, 0), PieceColor::White, this));
-        addPiece(new Figures::Rook(Position(7, 0), PieceColor::White, this));
-        addPiece(new Figures::Knight(Position(1, 0), PieceColor::White, this));
-        addPiece(new Figures::Knight(Position(6, 0), PieceColor::White, this));
-        addPiece(new Figures::Bishop(Position(2, 0), PieceColor::White, this));
-        addPiece(new Figures::Bishop(Position(5, 0), PieceColor::White, this));
-        addPiece(new Figures::Queen(Position(4, 0), PieceColor::White, this));
-        addPiece(new Figures::King(Position(3, 0), PieceColor::White, this));
-
-        addPiece(new Figures::Rook(Position(0, 7), PieceColor::Black, this));
-        addPiece(new Figures::Rook(Position(7, 7), PieceColor::Black, this));
-        addPiece(new Figures::Knight(Position(1, 7), PieceColor::Black, this));
-        addPiece(new Figures::Knight(Position(6, 7), PieceColor::Black, this));
-        addPiece(new Figures::Bishop(Position(2, 7), PieceColor::Black, this));
-        addPiece(new Figures::Bishop(Position(5, 7), PieceColor::Black, this));
-        addPiece(new Figures::Queen(Position(4, 7), PieceColor::Black, this));
-        addPiece(new Figures::King(Position(3, 7), PieceColor::Black, this));
-
-        buildBoardMap();
     }
 }
 

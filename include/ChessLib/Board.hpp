@@ -10,6 +10,8 @@
 #include "ChessLib/Piece/IPieceable.hpp"
 #include "ChessLib/IMove.hpp"
 
+#include "Defines.hpp"
+
 #include <vector>
 
 namespace Chess
@@ -27,7 +29,7 @@ namespace Chess
         IPieceable* getPiece(const Position& pos) const override;
         std::vector<IPieceable*> getPieces(PieceType type, PieceColor color) const override;
 
-        void updatePieceType(const Position& pos, PieceType) override;
+        void updatePieceType(const Position& pos, PieceType new_type) override;
         void updateMap() override;
         void reset() override;
 
@@ -40,8 +42,6 @@ namespace Chess
         void buildBoardMap();
         void clearBoardMap();
         void clearPieces();
-
-        void setDefaultPieces();
     };
 }
 

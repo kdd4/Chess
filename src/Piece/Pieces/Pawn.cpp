@@ -1,33 +1,45 @@
-#include "ChessLib/Figures/Pawn.hpp"
+#include "ChessLib/Piece/Pieces/Pawn.hpp"
 
 namespace Chess
 {
-    namespace Figures
+    namespace Piece
     {
-        Pawn::Pawn(Position position, int color, Board* board, int moveCount, int lastMoveMoment, int prevLastMoveMoment, bool deleted) 
-            : 
-            Figure(position, color, Figures::Type::Pawn, board, moveCount, lastMoveMoment, prevLastMoveMoment, deleted) 
+        Pawn::Pawn(Position pos, PieceColor color, IBoard* board)
+            :
+            IPiece(IPieceable(pos, PieceType::Pawn, color), IAllocatable(board))
         {}
 
-        Figure* Pawn::clone(Board* board) const
+        Pawn::Pawn(IPieceable* pieceable, IAllocatable* allocatable)
+            :
+            IPiece(*pieceable, *allocatable)
         {
-            return new Pawn(this->pos, this->color, board, this->moveCount, this->lastMoveMoment, this->prevLastMoveMoment, this->deleted);
+            type = PieceType::Pawn;
         }
 
-        void Pawn::getMoves(std::vector<Move>& vec, bool onlyAttack) const
+        Pawn::Pawn(const IPiece& right)
+            :
+            IPiece(right)
+        {}
+
+        IPiece* Pawn::clone(IBoard* board) const
+        {
+            return new Pawn(*this);
+        }
+
+        void Pawn::getMoves(std::vector<IMove&>& vec, bool onlyAttack) const
         {
             if (deleted) return;
-            if (pos.y + color >= 8 || pos.y + color < 0) return;
-            Position movePos = Position(pos.x, pos.y + color);
-            const Figure* figure = board->getFigure(movePos);
-            if (figure == nullptr && !onlyAttack)
+            if (pos.y + getDirection() >= 8 || pos.y + getDirection() < 0) return;
+            Position movePos = Position(pos.x, pos.y + getDirection());
+            const IPieceable* piece = board->getPiece(movePos);
+            if (piece == nullptr && !onlyAttack)
             {
                 vec.push_back(Move(this, movePos, nullptr));
-                movePos = Position(pos.x, pos.y + color * 2);
-                if (this->lastMoveMoment == -1 && movePos.check())
+                movePos = Position(pos.x, pos.y + getDirection() * 2);
+                if (this->getLastMoveMoment() == -1 && movePos.check())
                 {
-                    figure = board->getFigure(movePos);
-                    if (figure == nullptr)
+                    piece = board->getPiece(movePos);
+                    if (piece == nullptr)
                     {
                         vec.push_back(Move(this, movePos, nullptr));
                     }
@@ -36,24 +48,24 @@ namespace Chess
 
             if (pos.x != 7)
             {
-                movePos = Position(pos.x + 1, pos.y + color);
-                figure = board->getFigure(movePos);
-                if (figure != nullptr)
+                movePos = Position(pos.x + 1, pos.y + getDirection());
+                piece = board->getPiece(movePos);
+                if (piece != nullptr)
                 {
-                    if (figure->color != color)
+                    if (piece->color != color)
                     {
                         vec.push_back(Move(this, movePos));
                     }
                 }
                 else
                 {
-                    figure = board->getFigure(Position(pos.x + 1, pos.y));
-                    if (figure != nullptr)
+                    piece = board->getPiece(Position(pos.x + 1, pos.y));
+                    if (piece != nullptr)
                     {
-                        if (figure->color != color && figure->type == Figures::Type::Pawn)
+                        if (piece->color != color && piece->type == PieceType::Pawn)
                         {
-                            if (figure->moveCount == 1 && figure->lastMoveMoment + 1 == board->moveCounter)
-                                vec.push_back(Move(this, Position(pos.x + 1, pos.y + color), Position(pos.x + 1, pos.y)));
+                            if (piece->moveCount == 1 && piece->getLastMoveMoment() + 1 == board->moveCounter)
+                                vec.push_back(Move(this, Position(pos.x + 1, pos.y + getDirection()), Position(pos.x + 1, pos.y)));
                         }
                     }
                 }
@@ -61,24 +73,24 @@ namespace Chess
 
             if (pos.x != 0)
             {
-                movePos = Position(pos.x - 1, pos.y + color);
-                figure = board->getFigure(movePos);
-                if (figure != nullptr)
+                movePos = Position(pos.x - 1, pos.y + getDirection());
+                piece = board->getPiece(movePos);
+                if (piece != nullptr)
                 {
-                    if (figure->color != color)
+                    if (piece->color != color)
                     {
                         vec.push_back(Move(this, movePos));
                     }
                 }
                 else
                 {
-                    figure = board->getFigure(Position(pos.x - 1, pos.y));
-                    if (figure != nullptr)
+                    piece = board->getPiece(Position(pos.x - 1, pos.y));
+                    if (piece != nullptr)
                     {
-                        if (figure->color != color && figure->type == Figures::Type::Pawn)
+                        if (piece->color != color && piece->type == PieceType::Pawn)
                         {
-                            if (figure->moveCount == 1 && figure->lastMoveMoment + 1 == board->moveCounter)
-                                vec.push_back(Move(this, Position(pos.x - 1, pos.y + color), Position(pos.x - 1, pos.y)));
+                            if (piece->moveCount == 1 && piece->getLastMoveMoment() + 1 == board->moveCounter)
+                                vec.push_back(Move(this, Position(pos.x - 1, pos.y + getDirection()), Position(pos.x - 1, pos.y)));
                         }
                     }
                 }
