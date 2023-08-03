@@ -15,6 +15,7 @@ namespace Chess
 
         int getDirection() const;
         int getLastMoveMoment() const;
+        int getMoveCount() const;
 
         Position pos;
 
@@ -22,7 +23,6 @@ namespace Chess
         PieceColor color = PieceColor::Null;
 
         std::vector<int> moveMoment;
-        int moveCount = 0;
         bool deleted = false;
     };
 }

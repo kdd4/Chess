@@ -29,6 +29,13 @@ namespace Chess
 
 	int IPieceable::getLastMoveMoment() const
 	{
+		if (moveMoment.size() == 0)
+			return -1;
 		return moveMoment.back();
+	}
+
+	int IPieceable::getMoveCount() const
+	{
+		return moveMoment.size();
 	}
 }

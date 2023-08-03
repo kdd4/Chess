@@ -14,6 +14,8 @@ namespace Chess
     {
     public:
         Move();
+        Move(Position start_pos, Position end_pos);
+        Move(Position start_pos, Position end_pos, Position attacked_pos);
 
         void make(IBoard* board) override;
         void cancel(IBoard* board) override;
