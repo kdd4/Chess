@@ -22,7 +22,7 @@ namespace Chess
 
         void appendStep(Position old_pos, Position new_pos);
         void appendAttack(Position attacked_pos);
-        void updateType(Position pos, PieceType old_type, PieceType new_type);
+        void updateType(Position old_pos, PieceType old_type, PieceType new_type);
 
     private:
         std::map<Position, Position> steps;

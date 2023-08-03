@@ -28,7 +28,7 @@ namespace Chess
             return new Pawn(*this);
         }
 
-        void Pawn::getMoves(std::vector<IMove&>& vec, bool onlyAttack) const
+        void Pawn::getMoves(std::vector<IMove*>& vec, bool onlyAttack) const
         {
             if (deleted) return;
             if (pos.y + getDirection() >= 8 || pos.y + getDirection() < 0) return;
@@ -37,14 +37,14 @@ namespace Chess
             IPieceable* piece = board->getPiece(movePos);
             if (piece == nullptr && !onlyAttack)
             {
-                vec.push_back(Move(pos, movePos));
+                vec.push_back(new Move(pos, movePos));
                 movePos = Position(pos.x, pos.y + getDirection() * 2);
                 if (this->getLastMoveMoment() == -1 && movePos.check())
                 {
                     piece = board->getPiece(movePos);
                     if (piece == nullptr)
                     {
-                        vec.push_back(Move(pos, movePos));
+                        vec.push_back(new Move(pos, movePos));
                     }
                 }
             }
@@ -57,7 +57,7 @@ namespace Chess
                 {
                     if (piece->color != color)
                     {
-                        vec.push_back(Move(pos, movePos, movePos));
+                        vec.push_back(new Move(pos, movePos, movePos));
                     }
                 }
                 else
@@ -68,7 +68,7 @@ namespace Chess
                         if (piece->color != color && piece->type == PieceType::Pawn)
                         {
                             if (piece->getMoveCount() == 1 && piece->getLastMoveMoment() == board->moveCounter - 1)
-                                vec.push_back(Move(pos, Position(pos.x + 1, pos.y + getDirection()), Position(pos.x + 1, pos.y)));
+                                vec.push_back(new Move(pos, Position(pos.x + 1, pos.y + getDirection()), Position(pos.x + 1, pos.y)));
                         }
                     }
                 }
@@ -82,7 +82,7 @@ namespace Chess
                 {
                     if (piece->color != color)
                     {
-                        vec.push_back(Move(pos, movePos, movePos));
+                        vec.push_back(new Move(pos, movePos, movePos));
                     }
                 }
                 else
@@ -93,12 +93,31 @@ namespace Chess
                         if (piece->color != color && piece->type == PieceType::Pawn)
                         {
                             if (piece->getMoveCount() == 1 && piece->getLastMoveMoment() == board->moveCounter - 1)
-                                vec.push_back(Move(pos, Position(pos.x - 1, pos.y + getDirection()), Position(pos.x - 1, pos.y)));
+                                vec.push_back(new Move(pos, Position(pos.x - 1, pos.y + getDirection()), Position(pos.x - 1, pos.y)));
                         }
                     }
                 }
             }
         }
 
+        IMove* Pawn::moveGenerator(Position start_pos, Position end_pos)
+        {
+            Move* move = new Move(start_pos, end_pos);
+            if (end_pos.y == 0 || end_pos.y == 7)
+            {
+                move->updateType(start_pos, PieceType::Pawn, PieceType::Queen);
+            }
+            return move;
+        }
+
+        IMove* Pawn::moveGenerator(Position start_pos, Position end_pos, Position attacked_pos)
+        {
+            Move* move = new Move(start_pos, end_pos, attacked_pos);
+            if (end_pos.y == 0 || end_pos.y == 7)
+            {
+                move->updateType(start_pos, PieceType::Pawn, PieceType::Queen);
+            }
+            return move;
+        }
     }
 }

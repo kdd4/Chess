@@ -17,6 +17,6 @@ namespace Chess
         IPiece(const IPiece& right);
 
         virtual IPiece* clone(IBoard* board) const = 0;
-        virtual void getMoves(std::vector<IMove&>& vec, bool onlyAttack = false) const = 0;
+        virtual void getMoves(std::vector<IMove*>& vec, bool onlyAttack = false) const = 0;
     };
 }
