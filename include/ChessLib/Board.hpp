@@ -23,8 +23,8 @@ namespace Chess
         Board(const Board& right);
         ~Board();
 
-        std::vector<IPiece*>& Board::getPieces();
-        const std::vector<IPiece*>& Board::getPieces() const;
+        std::vector<IPiece*>& getPieces();
+        const std::vector<IPiece*>& getPieces() const;
 
         IPieceable* getPiece(const Position& pos) const override;
         std::vector<IPieceable*> getPieces(PieceType type, PieceColor color) const override;

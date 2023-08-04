@@ -3,19 +3,19 @@
 #include <vector>
 #include "Defines.hpp"
 #include "Board.hpp"
-#include "Figures.hpp"
-#include "Move.hpp"
+#include "ChessLib/Piece/Pieces.hpp"
+#include "IMove.hpp"
 
 namespace Chess
 {
     class Game
     {
     public:
-        Game(Figures::Type (*getNewTypeWhite)(), Figures::Type (*getNewTypeBlack)());
+        Game(PieceType (*getNewTypeWhite)(), PieceType (*getNewTypeBlack)());
         Game(const Game& right);
         ~Game();
 
-        const Figure* get(Position pos) const;
+        const IPieceable* get(Position pos) const;
         int getResult() const;
         const Board& getBoard() const;
 
@@ -26,16 +26,8 @@ namespace Chess
     private:
         Board* board;
 
-        Figures::Type (*getNewTypeWhite)();
-        Figures::Type (*getNewTypeBlack)();
-
-        void makeMove(Move& moving);    // Перенести в Move
-        void cancelMove(Move& moving);
-
-        // Checking the possibility of making a move without changing the board
-        bool checkMove(Figure* movingFigure, Move& moving);
-
-        void updateFigure(Figure*& figure, Figures::Type newType);
+        PieceType (*getNewTypeWhite)();
+        PieceType (*getNewTypeBlack)();
     };
 }
 

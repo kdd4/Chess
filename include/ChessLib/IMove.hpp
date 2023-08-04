@@ -2,6 +2,8 @@
 
 #include "ChessLib/IBoard.hpp"
 
+#include <vector>
+
 namespace Chess
 {
     class IMove

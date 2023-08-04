@@ -27,6 +27,6 @@ namespace Chess
     private:
         std::map<Position, Position> steps;
         std::set<Position> attackedPositions;
-        std::map<Position, std::pair<PieceType, PieceType>> updateType;
+        std::map<Position, std::pair<PieceType, PieceType>> updateTypePairs;
     };
 }
