@@ -47,13 +47,18 @@ namespace Chess
     {
         for (int i = 0; i < 8; ++i)
         {
-            delete[] this->boardMap[i];
+            if (!boardMap[i]) continue;
+
+            delete[] boardMap[i];
             boardMap[i] = nullptr;
         }
-        delete[] this->boardMap;
+        delete[] boardMap;
+        boardMap = nullptr;
 
-        for(IPiece*& piece : this->pieces)
+        for(IPiece*& piece : pieces)
         {
+            if (!piece) continue;
+
             delete piece;
             piece = nullptr;
         }
@@ -82,23 +87,63 @@ namespace Chess
             if (piece == nullptr) continue;
             if (piece->deleted) continue;
             if (color != piece->color && color != PieceColor::All) continue;
-            if (type != piece->type && type != PieceType::Null) continue;
+            if (type != piece->type && type != PieceType::All) continue;
+
             vec.push_back(piece);
         }
         return vec;
     }
 
+    IMove* Board::getMove(const Position& start_pos, const Position& end_pos) const
+    {
+        int piece_id = boardMap[start_pos.y][start_pos.x];
+        IPiece* piece = pieces[piece_id];
+
+        std::vector<IMove*> moves;
+        piece->getMoves(moves);
+
+        for (IMove* move : moves)
+        {
+            try
+            {
+                if (move->getSteps().at(start_pos) == end_pos)
+                {
+                    return move;
+                }
+            }
+            catch (std::out_of_range&) {}
+        }
+    
+        return nullptr;
+    }
+
+    void Board::getMoves(const Position& pos, std::vector<IMove*>& vec) const
+    {
+        int piece_id = boardMap[pos.y][pos.x];
+        IPiece* piece = pieces[piece_id];
+
+        piece->getMoves(vec);
+    }
+
+    void Board::getMoves(std::vector<IMove*>& vec) const
+    {
+        for (IPiece* piece : pieces)
+        {
+            piece->getMoves(vec);
+        }
+    }
+
     void Board::updatePieceType(const Position& pos, PieceType new_type)
     {
-        int pieceid = boardMap[pos.x][pos.y];
+        int piece_id = boardMap[pos.x][pos.y];
 
-        if (pieceid == -1)
-            throw excLogicalError();
+        if (piece_id == -1)
+            throw std::logic_error("Detected a logical error");
 
-        IPiece*& piece = pieces[pieceid];
+        IPiece*& piece = pieces[piece_id];
 
         if (piece == nullptr)
-            throw excLogicalError();
+            throw std::logic_error("Detected a logical error");
 
         IPiece* new_piece;
 
@@ -131,6 +176,9 @@ namespace Chess
         default:
             break;
         }
+
+        delete pieces[piece_id];
+        pieces[piece_id] = new_piece;
     }
 
     void Board::updateMap()

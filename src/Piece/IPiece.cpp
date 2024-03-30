@@ -2,15 +2,15 @@
 
 namespace Chess
 {
-    IPiece::IPiece(IPieceable& pieceable, IAllocatable& allocatable)
+    IPiece::IPiece(const IPieceable& pieceable, IBoard* const board)
         :
         IPieceable(pieceable),
-        IAllocatable(allocatable)
+        board(board)
     {}
 
     IPiece::IPiece(const IPiece& right)
         :
         IPieceable(right),
-        IAllocatable(right)
+        board(right.board)
     {}
 }

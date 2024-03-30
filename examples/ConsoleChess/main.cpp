@@ -5,7 +5,7 @@
 
 using namespace std;
 
-void draw(Chess::Game& game)
+void draw(Chess::Chess& game)
 {
     map<int, string> FigCh = {{1, "P "}, {2, "R "}, {3, "Kn"}, {4, "B "}, {5, "Q "}, {6, "K "}};
     system("cls");
@@ -16,7 +16,7 @@ void draw(Chess::Game& game)
         std::cout << ' ' << i << ' ';
     }
     std::cout   << "\t Move color: "
-                << ((game.getBoard().moveColor == Chess::Color::Black) ? "Black" : "White")
+                << ((game.getBoard().moveColor == Chess::PieceColor::Black) ? "Black" : "White")
                 << "\n\n";
 
     for (int i = 0; i < 8; ++i)
@@ -27,7 +27,7 @@ void draw(Chess::Game& game)
             const Chess::Figure* fig = game.get(Chess::Position(j, i));
             if (fig != nullptr)
             {
-                std::cout   << ((fig->color == Chess::Color::Black) ? " \x1B[37m" : " \033[2;47;30m")
+                std::cout   << ((fig->color == Chess::PieceColor::Black) ? " \x1B[37m" : " \033[2;47;30m")
                             << FigCh[(long long)(fig->type)]
                             << "\033[0m";
             }
@@ -40,11 +40,11 @@ void draw(Chess::Game& game)
 
 int main()
 {
-    Chess::Figures::Type (*getNewTypeWhite)() = []() -> Chess::Figures::Type { return Chess::Figures::Type::Queen;};
-    Chess::Figures::Type (*getNewTypeBlack)() = []() -> Chess::Figures::Type { return Chess::Figures::Type::Queen;};
+    Chess::PieceType (*getNewTypeWhite)() = []() -> Chess::PieceType { return Chess::PieceType::Queen;};
+    Chess::PieceType (*getNewTypeBlack)() = []() -> Chess::PieceType { return Chess::PieceType::Queen;};
 
-    Chess::Game game(getNewTypeWhite, getNewTypeBlack);
-    while (game.getResult() == Chess::Color::Null)
+    Chess::Chess game(getNewTypeWhite, getNewTypeBlack);
+    while (game.getResult() == Chess::PieceColor::Null)
     {
         draw(game);
         int x1, y1, x2, y2;
@@ -57,7 +57,7 @@ int main()
     draw(game);
 
     std::cout   << "\nWin "
-                << ((game.getResult() == Chess::Color::Black) ? "Black" : "White")
+                << ((game.getResult() == Chess::PieceColor::Black) ? "Black" : "White")
                 << "\n";
 
     return 0;

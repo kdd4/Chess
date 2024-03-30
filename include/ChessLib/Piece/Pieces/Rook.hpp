@@ -19,7 +19,7 @@ namespace Chess
             Rook(const IPiece& right);
 
             IPiece* clone(IBoard* board) const override final;
-            void getMoves(std::vector<Move*>& vec, bool onlyAttack = false) const override final;
+            void getMoves(std::vector<IMove*>& vec, bool onlyAttack = false) const override final;
         };
     }
 }

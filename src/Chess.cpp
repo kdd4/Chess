@@ -2,33 +2,33 @@
 
 namespace Chess
 {
-    Game::Game(Figures::Type (*getNewTypeWhite)(), Figures::Type (*getNewTypeBlack)())
+    Chess::Chess(PieceType (*getNewTypeWhite)(), PieceType (*getNewTypeBlack)())
         : board(new Board()), getNewTypeWhite(getNewTypeWhite), getNewTypeBlack(getNewTypeBlack) {}
 
-    Game::Game(const Game& right)
+    Chess::Chess(const Chess& right)
         : board(new Board(*right.board)), getNewTypeWhite(right.getNewTypeWhite), getNewTypeBlack(right.getNewTypeBlack) {}
 
-    Game::~Game()
+    Chess::~Chess()
     {
         board->~Board();
     }
 
-    const Figure* Game::get(Position pos) const
+    const IPieceable* Chess::get(Position pos) const
     {
-        return board->getFigure(pos);
+        return board->getPiece(pos);
     }
 
-    int Game::getResult() const
+    PieceColor Chess::getResult() const
     {
         return board->result;
     }
 
-    const Board& Game::getBoard() const
+    const Board& Chess::getBoard() const
     {
         return *board;
     }
 
-    Game& Game::operator=(const Game& right)
+    Chess& Chess::operator=(const Chess& right)
     {
         delete this->board;
         this->board = new Board(*right.board);
@@ -37,7 +37,7 @@ namespace Chess
 
         return *this;
     }
-
+    /*
     void Game::makeMove(Move& moving)
     {
         if (moving.attackedFigure != nullptr) moving.attackedFigure->deleted = true;
@@ -80,52 +80,40 @@ namespace Chess
             figure->prevLastMoveMoment = -1;
             figure->moveCount -= 1;
         }
-    }
+    }*/
 
-    bool Game::moving(Position pos1, Position pos2)
+    bool Chess::moving(Position pos1, Position pos2)
     {
         // Checking for correct positions
         if (!pos1.check() || !pos2.check()) return false;
 
-        Figure*& movingFigure = board->getFigure(pos1);
-        if (movingFigure == nullptr) return false;
-        if (movingFigure->color != board->moveColor) return false;
+        IPieceable* movingPiece = board->getPiece(pos1);
+        if (movingPiece == nullptr) return false;
+        if (movingPiece->color != board->moveColor) return false;
 
         // Search for a move
-        std::vector<Move> possibleMoves;
-        movingFigure->getMoves(possibleMoves);
+        IMove* moving = board->getMove(pos1, pos2);
 
-        Move moving;
-        bool flFound = false;
-        for (Move& mv : possibleMoves)
-        {
-            if (mv.moving.newPos == pos2)
-            {
-                moving = mv;
-                flFound = true;
-                break;
-            }
-        }
-        if (!flFound)
+        if (!moving)
         {
             return false;
         }
 
-        if (!checkMove(movingFigure, moving)) return false;
+        if (!checkMove(movingPiece, moving)) return false;
 
         // Making the move
         makeMove(moving);
 
-        if (movingFigure->type == Figures::Type::Pawn)
+        if (movingPiece->type == Figures::Type::Pawn)
         {
-            if (movingFigure->pos.y == 0 || movingFigure->pos.y == 7)
+            if (movingPiece->pos.y == 0 || movingPiece->pos.y == 7)
             {
                 Figures::Type newType = Figures::Type::Pawn;
                 while(newType == Figures::Type::Pawn || newType == Figures::Type::King)
                     newType = (board->moveColor == Color::White) ? getNewTypeWhite() : getNewTypeBlack();
 
-                Figure* prevFig = movingFigure;
-                updateFigure(movingFigure, newType);
+                Figure* prevFig = movingPiece;
+                updateFigure(movingPiece, newType);
                 delete prevFig;
             }
         }
@@ -173,6 +161,7 @@ namespace Chess
         return true;
     }
 
+    /*
     bool Game::checkMove(Figure* movingFigure, Move& moving)
     {
         // Making the move
@@ -252,6 +241,6 @@ namespace Chess
             throw excLogicalError();
         }
         figure = newFigure;
-    }
+    }*/
 }
 

@@ -2,39 +2,42 @@
 
 namespace Chess
 {
-	Move::Move() {}
+    ImplMove::ImplMove(IBoard* board)
+        : 
+        board(board)
+    {}
 
-    Move::Move(Position start_pos, Position end_pos)
+    ImplMove::ImplMove(IBoard* board, Position start_pos, Position end_pos)
     {
 
     }
 
-    Move::Move(Position start_pos, Position end_pos, Position attacked_pos)
+    ImplMove::ImplMove(IBoard* board, Position start_pos, Position end_pos, Position attacked_pos)
     {
 
     }
 
-    void Move::make(IBoard* board) override
+    void ImplMove::make()
     {
 
     }
 
-    void Move::cancel(IBoard* board) override
+    void ImplMove::cancel()
     {
 
     }
 
-    void Move::appendStep(Position old_pos, Position new_pos)
+    void ImplMove::appendStep(Position old_pos, Position new_pos)
     {
 
     }
 
-    void Move::appendAttack(Position attacked_pos)
+    void ImplMove::appendAttack(Position attacked_pos)
     {
 
     }
 
-    void Move::updateType(Position old_pos, PieceType old_type, PieceType new_type)
+    void ImplMove::updateType(Position old_pos, PieceType old_type, PieceType new_type)
     {
 
     }

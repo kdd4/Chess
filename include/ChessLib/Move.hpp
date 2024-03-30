@@ -10,23 +10,33 @@
 
 namespace Chess
 {
-    class Move : public IMove
+    class ImplMove : public IMove
     {
     public:
-        Move();
-        Move(Position start_pos, Position end_pos);
-        Move(Position start_pos, Position end_pos, Position attacked_pos);
+        ImplMove(IBoard* board);
 
-        void make(IBoard* board) override;
-        void cancel(IBoard* board) override;
+        void make() override;
+        void cancel() override;
+
+        const std::map<Position, Position>& getSteps() const override;
+        const std::set<Position>& getAttackedPositions() const override;
+        const std::map<Position, PieceType>& getTypeChanges() const override;
 
         void appendStep(Position old_pos, Position new_pos);
         void appendAttack(Position attacked_pos);
         void updateType(Position old_pos, PieceType old_type, PieceType new_type);
 
     private:
+        IBoard* board;
+        //int move_cnt; add hash
+
         std::map<Position, Position> steps;
         std::set<Position> attackedPositions;
-        std::map<Position, std::pair<PieceType, PieceType>> updateTypePairs;
+        std::map<Position, PieceType> updateType;
+    };
+
+    class MoveFabric
+    {
+
     };
 }

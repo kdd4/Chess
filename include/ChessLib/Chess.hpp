@@ -1,6 +1,8 @@
 #pragma once
 
 #include <vector>
+
+#include "ChessLib/Piece/Enums.hpp"
 #include "Defines.hpp"
 #include "Board.hpp"
 #include "ChessLib/Piece/Pieces.hpp"
@@ -8,18 +10,18 @@
 
 namespace Chess
 {
-    class Game
+    class Chess
     {
     public:
-        Game(PieceType (*getNewTypeWhite)(), PieceType (*getNewTypeBlack)());
-        Game(const Game& right);
-        ~Game();
+        Chess(PieceType (*getNewTypeWhite)(), PieceType (*getNewTypeBlack)());
+        Chess(const Chess& right);
+        ~Chess();
 
         const IPieceable* get(Position pos) const;
-        int getResult() const;
+        PieceColor getResult() const;
         const Board& getBoard() const;
 
-        Game& operator=(const Game& right);
+        Chess& operator=(const Chess& right);
 
         bool moving(Position pos1, Position pos2);
 
