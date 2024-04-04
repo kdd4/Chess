@@ -2,41 +2,24 @@
 
 #include "ChessLib/Piece/Enums.hpp"
 #include "ChessLib/Position.hpp"
-#include "ChessLib/IBoard.hpp"
-#include "ChessLib/IMove.hpp"
 
 #include <map>
 #include <set>
 
 namespace Chess
 {
-    class ImplMove : public IMove
+    class IMove
     {
     public:
-        ImplMove(IBoard* board);
+        virtual void make() = 0;
+        virtual void cancel() = 0;
 
-        void make() override;
-        void cancel() override;
-
-        const std::map<Position, Position>& getSteps() const override;
-        const std::set<Position>& getAttackedPositions() const override;
-        const std::map<Position, PieceType>& getTypeChanges() const override;
-
-        void appendStep(Position old_pos, Position new_pos);
-        void appendAttack(Position attacked_pos);
-        void updateType(Position old_pos, PieceType old_type, PieceType new_type);
-
-    private:
-        IBoard* board;
-        //int move_cnt; add hash
-
-        std::map<Position, Position> steps;
-        std::set<Position> attackedPositions;
-        std::map<Position, PieceType> updateType;
+        virtual const std::map<Position, Position>& getSteps() const = 0;
+        virtual const std::set<Position>& getAttackedPositions() const = 0;
+        virtual const std::map<Position, PieceType>& getTypeChanges() const = 0;
     };
 
-    class MoveFabric
-    {
-
-    };
+    typedef IMove Move;
 }
+
+

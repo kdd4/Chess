@@ -7,11 +7,11 @@
 
 namespace Chess
 {
-    class IPieceable
+    class IPiece
     {
     public:
-        IPieceable(Position pos, PieceType type, PieceColor color, std::vector<int> moveMoment={}, bool deleted=false);
-        IPieceable(const IPieceable& right);
+        IPiece(Position pos, PieceType type, PieceColor color, std::vector<int> moveMoment={}, bool deleted=false);
+        IPiece(const IPiece& right);
 
         int getDirection() const;
         int getLastMoveMoment() const;
@@ -25,4 +25,6 @@ namespace Chess
         std::vector<int> moveMoment;
         bool deleted = false;
     };
+
+    typedef IPiece Piece;
 }

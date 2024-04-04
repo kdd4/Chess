@@ -1,8 +1,8 @@
-#include "ChessLib/Piece/IPieceable.hpp"
+#include "ChessLib/Piece/Piece.hpp"
 
 namespace Chess
 {
-	IPieceable::IPieceable(Position pos, PieceType type, PieceColor color, std::vector<int> moveMoment, bool deleted)
+	IPiece::IPiece(Position pos, PieceType type, PieceColor color, std::vector<int> moveMoment, bool deleted)
 		:
 		pos(pos),
 		type(type),
@@ -11,7 +11,7 @@ namespace Chess
 		deleted(deleted)
 	{}
 
-	IPieceable::IPieceable(const IPieceable& right)
+	IPiece::IPiece(const IPiece& right)
 		:
 		pos(right.pos),
 		type(right.type),
@@ -20,21 +20,21 @@ namespace Chess
 		deleted(right.deleted)
 	{}
 
-	int IPieceable::getDirection() const
+	int IPiece::getDirection() const
 	{
 		if (color == PieceColor::Black)
 			return -1;
 		return 1;
 	}
 
-	int IPieceable::getLastMoveMoment() const
+	int IPiece::getLastMoveMoment() const
 	{
 		if (moveMoment.size() == 0)
 			return -1;
 		return moveMoment.back();
 	}
 
-	int IPieceable::getMoveCount() const
+	int IPiece::getMoveCount() const
 	{
 		return moveMoment.size();
 	}

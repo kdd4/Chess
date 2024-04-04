@@ -9,7 +9,7 @@
 
 namespace Chess
 {
-    namespace Piece
+    namespace Pieces
     {
         class Knight : public IPiece
         {

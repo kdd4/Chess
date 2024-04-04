@@ -1,4 +1,4 @@
-#include "ChessLib/Move.hpp"
+#include "ChessLib/ImplMove.hpp"
 
 namespace Chess
 {

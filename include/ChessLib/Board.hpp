@@ -1,50 +1,29 @@
 #pragma once
 
-#include <vector>
-#include <stdexcept>
-
-#include "ChessLib/Piece/Pieces.hpp"
-
-#include "ChessLib/IBoard.hpp"
-#include "ChessLib/Piece/IPiece.hpp"
-#include "ChessLib/Piece/IPieceable.hpp"
-#include "ChessLib/IMove.hpp"
+#include "ChessLib/Piece/Piece.hpp"
+#include "ChessLib/Move.hpp"
 
 #include "ChessLib/Piece/Enums.hpp"
 #include "ChessLib/Position.hpp"
 
+#include <vector>
+#include <memory>
+
 namespace Chess
 {
-    class Board : public IBoard
-    {
-    public:
-        Board();
-        Board(const Board& right);
-        ~Board();
+	class IBoard
+	{
+	public:
+		virtual std::shared_ptr<Piece> getPiece(const Position& pos) const = 0;
+		virtual std::vector<std::shared_ptr<Piece>> getPieces(PieceType type, PieceColor color) const = 0;
 
-        std::vector<IPiece*>& getPieces();
-        const std::vector<IPiece*>& getPieces() const;
+		virtual std::shared_ptr<Move> getMove(const Position& start_pos, const Position& end_pos) const = 0;
+		virtual void getMoves(const Position& pos, std::vector<std::shared_ptr<Move>>& vec) const = 0;
+		virtual void getMoves(std::vector<std::shared_ptr<Move>>& vec) const = 0;
 
-        IPieceable* getPiece(const Position& pos) const override;
-        std::vector<IPieceable*> getPieces(PieceType type, PieceColor color) const override;
+		virtual PieceColor getResult() const = 0;
+		virtual PieceColor getMoveColor() const = 0;
+	};
 
-        IMove* getMove(const Position& start_pos, const Position& end_pos) const override;
-        void getMoves(const Position& pos, std::vector<IMove*>& vec) const override;
-        void getMoves(std::vector<IMove*>& vec) const override;
-
-        void updatePieceType(const Position& pos, PieceType new_type) override;
-        void updateMap() override;
-        void reset() override;
-
-    private:
-        void addPiece(IPiece* piece);
-
-        std::vector<IPiece*> pieces = {nullptr};
-
-        unsigned int** boardMap = nullptr;
-        void buildBoardMap();
-        void clearBoardMap();
-        void clearPieces();
-    };
+	typedef IBoard Board;
 }
-

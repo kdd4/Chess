@@ -3,10 +3,9 @@
 #include <vector>
 
 #include "ChessLib/Piece/Enums.hpp"
-#include "Defines.hpp"
-#include "Board.hpp"
+#include "ChessLib/ImplBoard.hpp"
 #include "ChessLib/Piece/Pieces.hpp"
-#include "IMove.hpp"
+#include "ChessLib/Move.hpp"
 
 namespace Chess
 {
@@ -17,7 +16,7 @@ namespace Chess
         Chess(const Chess& right);
         ~Chess();
 
-        const IPieceable* get(Position pos) const;
+        const Piece get(Position pos) const;
         PieceColor getResult() const;
         const Board& getBoard() const;
 
