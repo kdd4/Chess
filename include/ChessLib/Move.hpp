@@ -11,12 +11,11 @@ namespace Chess
     class IMove
     {
     public:
-        virtual void make() = 0;
-        virtual void cancel() = 0;
-
         virtual const std::map<Position, Position>& getSteps() const = 0;
         virtual const std::set<Position>& getAttackedPositions() const = 0;
-        virtual const std::map<Position, PieceType>& getTypeChanges() const = 0;
+        virtual const std::map<Position, std::pair<PieceType, PieceType>>& getTypeChanges() const = 0; // old and new types
+
+        virtual int getMoveCount() const = 0;
     };
 
     typedef IMove Move;

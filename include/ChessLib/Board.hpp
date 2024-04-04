@@ -23,6 +23,7 @@ namespace Chess
 
 		virtual PieceColor getResult() const = 0;
 		virtual PieceColor getMoveColor() const = 0;
+		virtual int getMoveCount() const = 0;
 	};
 
 	typedef IBoard Board;

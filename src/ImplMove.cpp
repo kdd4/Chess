@@ -2,43 +2,43 @@
 
 namespace Chess
 {
-    ImplMove::ImplMove(IBoard* board)
-        : 
-        board(board)
-    {}
+	ImplMove::ImplMove(std::weak_ptr<Board> board) :
+		board(board),
+		moveCnt(board.lock()->getMoveCount())
+	{}
 
-    ImplMove::ImplMove(IBoard* board, Position start_pos, Position end_pos)
-    {
+	const std::map<Position, Position>& ImplMove::getSteps() const
+	{
+		return steps;
+	}
 
-    }
+	const std::set<Position>& ImplMove::getAttackedPositions() const
+	{
+		return attacked_positions;
+	}
 
-    ImplMove::ImplMove(IBoard* board, Position start_pos, Position end_pos, Position attacked_pos)
-    {
+	const std::map<Position, std::pair<PieceType, PieceType>>& ImplMove::getTypeChanges() const
+	{
+		return type_changes;
+	}
 
-    }
+	int ImplMove::getMoveCount() const
+	{
+		return moveCnt;
+	}
 
-    void ImplMove::make()
-    {
+	void ImplMove::appendStep(Position old_pos, Position new_pos)
+	{
+		steps.insert(old_pos, new_pos);
+	}
 
-    }
+	void ImplMove::appendAttack(Position attacked_pos)
+	{
+		attacked_positions.insert(attacked_pos);
+	}
 
-    void ImplMove::cancel()
-    {
-
-    }
-
-    void ImplMove::appendStep(Position old_pos, Position new_pos)
-    {
-
-    }
-
-    void ImplMove::appendAttack(Position attacked_pos)
-    {
-
-    }
-
-    void ImplMove::updateType(Position old_pos, PieceType old_type, PieceType new_type)
-    {
-
-    }
+	void ImplMove::changeType(Position cur_pos, PieceType old_type, PieceType new_type)
+	{
+		type_changes.insert(std::make_pair(cur_pos, std::make_pair(old_type,new_type)));
+	}
 }

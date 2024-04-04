@@ -3,23 +3,40 @@
 namespace Chess
 {
     ImplBoard::ImplBoard() :
-        result(PieceColor::Null),
-        moveColor(PieceColor::Null),
-        moveCounter(-1)
+        Result(PieceColor::Null),
+        MoveColor(PieceColor::Null),
+        MoveCounter(-1)
     {
         reset();
     }
 
     ImplBoard::ImplBoard(const ImplBoard& right)
         :
-        result(right.result),
-        moveColor(right.moveColor),
-        moveCounter(right.moveCounter)
+        Result(right.Result),
+        MoveColor(right.MoveColor),
+        MoveCounter(right.MoveCounter)
     {
-        for (std::shared_ptr<MovablePiece> piece : right.pieces)
+        for (std::shared_ptr<MovablePiece> piece : right.Pieces)
         {
-            pieces.push_back(piece->clone(std::make_shared<Board>(this)));
+            Pieces.push_back(piece->clone(std::make_shared<Board>(this)));
         }
+    }
+
+    int ImplBoard::getPieceId(const Position& pos) const
+    {
+        for (int i = 0; i < Pieces.size(); ++i)
+        {
+            if (Pieces[i]->pos != pos) continue;
+            return i;
+        }
+        return -1;
+    }
+
+    std::shared_ptr<MovablePiece> ImplBoard::getMovablePiece(const Position& pos) const
+    {
+        int id = getPieceId(pos);
+
+        return (id != -1) ? Pieces[id] : nullptr;
     }
 
     std::shared_ptr<Piece> ImplBoard::getPiece(const Position& pos) const
@@ -30,7 +47,7 @@ namespace Chess
     std::vector<std::shared_ptr<Piece>> ImplBoard::getPieces(PieceType type, PieceColor color) const
     {
         std::vector<std::shared_ptr<Piece>> vec;
-        for (std::shared_ptr<Piece> piece : pieces)
+        for (std::shared_ptr<Piece> piece : Pieces)
         {
             //if (piece == nullptr) continue;
             if (piece->deleted) continue;
@@ -71,7 +88,7 @@ namespace Chess
 
     void ImplBoard::getMoves(std::vector<std::shared_ptr<Move>>& vec) const
     {
-        for (std::shared_ptr<MovablePiece> piece : pieces)
+        for (std::shared_ptr<MovablePiece> piece : Pieces)
         {
             piece->getMoves(vec);
         }
@@ -79,130 +96,188 @@ namespace Chess
 
     PieceColor ImplBoard::getResult() const
     {
-        return result;
+        return Result;
     }
 
     PieceColor ImplBoard::getMoveColor() const
     {
-        return moveColor;
+        return MoveColor;
     }
-    /*
-    void ImplBoard::updatePieceType(const Position& pos, PieceType new_type)
+
+    void ImplBoard::makeMove(const std::shared_ptr<Move> move)
     {
-        std::shared_ptr<MovablePiece> piece = pieces[piece_id];
+        if (MoveCounter != move->getMoveCount())
+            return;
 
-        if (piece == nullptr)
-            throw std::logic_error("Detected a logical error");
+        for (const Position& attacked_pos : move->getAttackedPositions())
+        {
+            std::shared_ptr<Piece> attacked_piece = getPiece(attacked_pos);
 
-        IPiece* new_piece;
+            if (attacked_piece == nullptr)
+            {
+                throw std::logic_error("Attacked piece isn't found");
+            }
 
-        switch (new_type)
+            if (attacked_piece->deleted == true)
+            {
+                throw std::logic_error("Failure attacking");
+            }
+
+            attacked_piece->deleted = true;
+        }
+
+        for (const auto& type_change : move->getTypeChanges())
+        {
+            std::shared_ptr<Piece> piece = getPiece(type_change.first);
+
+            if (piece == nullptr)
+            {
+                throw std::logic_error("Type changing failure");
+            }
+
+            changeType(type_change.first, type_change.second.second);
+        }
+
+        for (const std::pair<Position, Position>& step : move->getSteps())
+        {
+            std::shared_ptr<Piece> piece = getPiece(step.first);
+
+            if (piece == nullptr)
+            {
+                throw std::logic_error("Piece isn't found");
+            }
+
+            piece->pos = step.second;
+        }
+    }
+
+    void ImplBoard::cancelMove(const std::shared_ptr<Move> move)
+    {
+        if (MoveCounter - 1 != move->getMoveCount())
+            return;
+
+        for (const std::pair<Position, Position>& step : move->getSteps())
+        {
+            std::shared_ptr<Piece> piece = getPiece(step.second);
+
+            if (piece == nullptr)
+            {
+                throw std::logic_error("Piece isn't found");
+            }
+
+            piece->pos = step.first;
+        }
+
+        for (const auto& type_change : move->getTypeChanges())
+        {
+            std::shared_ptr<Piece> piece = getPiece(type_change.first);
+
+            if (piece == nullptr)
+            {
+                throw std::logic_error("Type changing failure");
+            }
+
+            changeType(type_change.first, type_change.second.first);
+        }
+
+        for (const Position& attacked_pos : move->getAttackedPositions())
+        {
+            std::shared_ptr<Piece> attacked_piece = getPiece(attacked_pos);
+
+            if (attacked_piece == nullptr)
+            {
+                throw std::logic_error("Attacked piece isn't found");
+            }
+
+            if (attacked_piece->deleted == false)
+            {
+                throw std::logic_error("Failure attacking reset");
+            }
+
+            attacked_piece->deleted = false;
+        }
+    }
+
+    
+    void ImplBoard::changeType(const Position& pos, const PieceType type)
+    {
+        int piece_id = getPieceId(pos);
+
+        if (piece_id == -1)
+            throw std::logic_error("Type changing failure");
+
+        std::shared_ptr<MovablePiece>& piece = Pieces[piece_id];
+
+        std::shared_ptr<MovablePiece> new_piece;
+
+        switch (type)
         {
         case PieceType::Pawn:
-            new_piece = new Piece::Pawn(*piece);
+            new_piece = std::make_shared<MovablePiece>(new Pieces::Pawn(*piece));
             break;
 
         case PieceType::Rook:
-            new_piece = new Piece::Rook(*piece);
+            new_piece = std::make_shared<MovablePiece>(new Pieces::Rook(*piece));
             break;
 
         case PieceType::Knight:
-            new_piece = new Piece::Knight(*piece);
+            new_piece = std::make_shared<MovablePiece>(new Pieces::Knight(*piece));
             break;
 
         case PieceType::Bishop:
-            new_piece = new Piece::Bishop(*piece);
+            new_piece = std::make_shared<MovablePiece>(new Pieces::Bishop(*piece));
             break;
 
         case PieceType::Queen:
-            new_piece = new Piece::Bishop(*piece);
+            new_piece = std::make_shared<MovablePiece>(new Pieces::Bishop(*piece));
             break;
 
         case PieceType::King:
-            new_piece = new Piece::Bishop(*piece);
+            new_piece = std::make_shared<MovablePiece>(new Pieces::Bishop(*piece));
             break;
 
         default:
+            throw std::logic_error("Type changing failure: wrong type");
             break;
         }
 
-        delete pieces[piece_id];
-        pieces[piece_id] = new_piece;
-    }
-    */    
+        Pieces[piece_id].swap(new_piece);
+    } 
 
     void ImplBoard::reset()
     {
-        result = PieceColor::Null;
-        moveColor = PieceColor::White;
-        moveCounter = 0;
+        Result = PieceColor::Null;
+        MoveColor = PieceColor::White;
+        MoveCounter = 0;
 
         for (int i = 0; i < 8; ++i)
         {
-            addPiece(new Pieces::Pawn(Position(i, 1), PieceColor::White, this));
+            addPiece(new Pieces::Pawn(Position(i, 1), PieceColor::White, std::make_shared<Board>(this)));
 
-            addPiece(new Pieces::Pawn(Position(i, 6), PieceColor::Black, this));
+            addPiece(new Pieces::Pawn(Position(i, 6), PieceColor::Black, std::make_shared<Board>(this)));
         }
 
-        addPiece(new Pieces::Rook(Position(0, 0), PieceColor::White, this));
-        addPiece(new Pieces::Rook(Position(7, 0), PieceColor::White, this));
-        addPiece(new Pieces::Knight(Position(1, 0), PieceColor::White, this));
-        addPiece(new Pieces::Knight(Position(6, 0), PieceColor::White, this));
-        addPiece(new Pieces::Bishop(Position(2, 0), PieceColor::White, this));
-        addPiece(new Pieces::Bishop(Position(5, 0), PieceColor::White, this));
-        addPiece(new Pieces::Queen(Position(4, 0), PieceColor::White, this));
-        addPiece(new Pieces::King(Position(3, 0), PieceColor::White, this));
+        addPiece(new Pieces::Rook(Position(0, 0), PieceColor::White, std::make_shared<Board>(this)));
+        addPiece(new Pieces::Rook(Position(7, 0), PieceColor::White, std::make_shared<Board>(this)));
+        addPiece(new Pieces::Knight(Position(1, 0), PieceColor::White, std::make_shared<Board>(this)));
+        addPiece(new Pieces::Knight(Position(6, 0), PieceColor::White, std::make_shared<Board>(this)));
+        addPiece(new Pieces::Bishop(Position(2, 0), PieceColor::White, std::make_shared<Board>(this)));
+        addPiece(new Pieces::Bishop(Position(5, 0), PieceColor::White, std::make_shared<Board>(this)));
+        addPiece(new Pieces::Queen(Position(4, 0), PieceColor::White, std::make_shared<Board>(this)));
+        addPiece(new Pieces::King(Position(3, 0), PieceColor::White, std::make_shared<Board>(this)));
 
-        addPiece(new Pieces::Rook(Position(0, 7), PieceColor::Black, this));
-        addPiece(new Pieces::Rook(Position(7, 7), PieceColor::Black, this));
-        addPiece(new Pieces::Knight(Position(1, 7), PieceColor::Black, this));
-        addPiece(new Pieces::Knight(Position(6, 7), PieceColor::Black, this));
-        addPiece(new Pieces::Bishop(Position(2, 7), PieceColor::Black, this));
-        addPiece(new Pieces::Bishop(Position(5, 7), PieceColor::Black, this));
-        addPiece(new Pieces::Queen(Position(4, 7), PieceColor::Black, this));
-        addPiece(new Pieces::King(Position(3, 7), PieceColor::Black, this));
-
+        addPiece(new Pieces::Rook(Position(0, 7), PieceColor::Black, std::make_shared<Board>(this)));
+        addPiece(new Pieces::Rook(Position(7, 7), PieceColor::Black, std::make_shared<Board>(this)));
+        addPiece(new Pieces::Knight(Position(1, 7), PieceColor::Black, std::make_shared<Board>(this)));
+        addPiece(new Pieces::Knight(Position(6, 7), PieceColor::Black, std::make_shared<Board>(this)));
+        addPiece(new Pieces::Bishop(Position(2, 7), PieceColor::Black, std::make_shared<Board>(this)));
+        addPiece(new Pieces::Bishop(Position(5, 7), PieceColor::Black, std::make_shared<Board>(this)));
+        addPiece(new Pieces::Queen(Position(4, 7), PieceColor::Black, std::make_shared<Board>(this)));
+        addPiece(new Pieces::King(Position(3, 7), PieceColor::Black, std::make_shared<Board>(this)));
     }
 
     void ImplBoard::addPiece(MovablePiece* piece)
     {
-        pieces.push_back(std::make_shared<MovablePiece>(piece));
+        Pieces.push_back(std::make_shared<MovablePiece>(piece));
     }
-    /*
-    void ImplBoard::updateMap()
-    {
-        clearBoardMap();
-        buildBoardMap();
-    }
-    void ImplBoard::buildBoardMap()
-    {
-        for (unsigned int i = 1; i < pieces.size(); ++i)
-        {
-            IPiece* piece = pieces.at(i);
-
-            if (piece->deleted) continue;
-            int x = piece->pos.x;
-            int y = piece->pos.y;
-
-            this->boardMap[y][x] = i;
-        }
-    }
-
-    void ImplBoard::clearBoardMap()
-    {
-        for (int i = 0; i < 8; ++i)
-        {
-            for (int j = 0; j < 8; ++j)
-            {
-                boardMap[i][j] = -1;
-            }
-        }
-    }
-
-    void ImplBoard::clearPieces()
-    {
-        pieces.clear();
-        pieces.push_back(nullptr);
-    }*/
 }
-
