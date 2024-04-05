@@ -1,128 +1,65 @@
-#include "ChessLib/Figures/Knight.hpp"
+#include "ChessLib/Piece/Pieces/Knight.hpp"
 
 namespace Chess
 {
-    namespace Figures
+    namespace Pieces
     {
-        Knight::Knight(Position position, int color, Board* board, int moveCount, int lastMoveMoment, int prevLastMoveMoment, bool deleted)
+        Knight::Knight(Position pos, PieceColor color, std::weak_ptr<Board>& board)
             :
-            Figure(position, color, Figures::Type::Knight, board, moveCount, lastMoveMoment, prevLastMoveMoment, deleted)
+            MovablePiece(pos, PieceType::Knight, color, board)
         {}
 
-        Figure* Knight::clone(Board* board) const
+        Knight::Knight(Piece& piece, std::weak_ptr<Board>& board)
+            :
+            MovablePiece(piece, board)
         {
-            return new Knight(this->pos, this->color, board, this->moveCount, this->lastMoveMoment, this->prevLastMoveMoment, this->deleted);
+            type = PieceType::Knight;
         }
 
-        void Knight::getMoves(std::vector<Move>& vec, bool onlyAttack) const
+        Knight::Knight(MovablePiece& right)
+            :
+            MovablePiece(right)
         {
-            Position movePos;
-            Figure* attackedFigure;
+            type = PieceType::Knight;
+        }
 
-            movePos = Position(pos.x + 2, pos.y + 1);
-            if (movePos.check())
+        std::shared_ptr<MovablePiece> Knight::clone(std::weak_ptr<Board> board) const
+        {
+            return std::make_shared<MovablePiece>(new Knight((Piece)*this, board));
+        }
+
+        void Knight::getMoves(std::vector<std::shared_ptr<Move>>& vec, bool onlyAttack) const
+        {
+            move({ pos.x + 1, pos.y + 2 }, vec);
+            move({ pos.x + 1, pos.y - 2 }, vec);
+            move({ pos.x - 1, pos.y + 2 }, vec);
+            move({ pos.x - 1, pos.y - 2 }, vec);
+
+            move({ pos.x + 2, pos.y + 1 }, vec);
+            move({ pos.x + 2, pos.y - 1 }, vec);
+            move({ pos.x - 2, pos.y + 1 }, vec);
+            move({ pos.x - 2, pos.y - 1 }, vec);
+        }
+
+        bool Knight::move(const Position& pos, std::vector<std::shared_ptr<Move>>& vec) const
+        {
+            if (!pos.check()) return false;
+
+            std::shared_ptr<Piece> attackedPiece = board.lock()->getPiece(pos);
+
+            if (attackedPiece != nullptr)
             {
-                attackedFigure = board->getFigure(movePos);
-                if (attackedFigure != nullptr)
-                {
-                    if (attackedFigure->color != color)
-                        vec.push_back(Move(this, movePos));
-                }
-                else
-                    vec.push_back(Move(this, movePos));
+                if (attackedPiece->color == color)
+                    return false;
             }
 
+            std::shared_ptr<ImplMove> move;
 
-            movePos = Position(pos.x + 2, pos.y - 1);
-            if (movePos.check())
-            {
-                attackedFigure = board->getFigure(movePos);
-                if (attackedFigure != nullptr)
-                {
-                    if (attackedFigure->color != color)
-                        vec.push_back(Move(this, movePos));
-                }
-                else
-                    vec.push_back(Move(this, movePos));
-            }
+            move->appendAttack(pos);
+            move->appendStep(this->pos, pos);
+            vec.push_back(move);
 
-            movePos = Position(pos.x - 2, pos.y + 1);
-            if (movePos.check())
-            {
-                attackedFigure = board->getFigure(movePos);
-                if (attackedFigure != nullptr)
-                {
-                    if (attackedFigure->color != color)
-                        vec.push_back(Move(this, movePos));
-                }
-                else
-                    vec.push_back(Move(this, movePos));
-            }
-
-            movePos = Position(pos.x - 2, pos.y - 1);
-            if (movePos.check())
-            {
-                attackedFigure = board->getFigure(movePos);
-                if (attackedFigure != nullptr)
-                {
-                    if (attackedFigure->color != color)
-                        vec.push_back(Move(this, movePos));
-                }
-                else
-                    vec.push_back(Move(this, movePos));
-            }
-
-            movePos = Position(pos.x + 1, pos.y + 2);
-            if (movePos.check())
-            {
-                attackedFigure = board->getFigure(movePos);
-                if (attackedFigure != nullptr)
-                {
-                    if (attackedFigure->color != color)
-                        vec.push_back(Move(this, movePos));
-                }
-                else
-                    vec.push_back(Move(this, movePos));
-            }
-
-            movePos = Position(pos.x + 1, pos.y - 2);
-            if (movePos.check())
-            {
-                attackedFigure = board->getFigure(movePos);
-                if (attackedFigure != nullptr)
-                {
-                    if (attackedFigure->color != color)
-                        vec.push_back(Move(this, movePos));
-                }
-                else
-                    vec.push_back(Move(this, movePos));
-            }
-
-            movePos = Position(pos.x - 1, pos.y + 2);
-            if (movePos.check())
-            {
-                attackedFigure = board->getFigure(movePos);
-                if (attackedFigure != nullptr)
-                {
-                    if (attackedFigure->color != color)
-                        vec.push_back(Move(this, movePos));
-                }
-                else
-                    vec.push_back(Move(this, movePos));
-            }
-
-            movePos = Position(pos.x - 1, pos.y - 2);
-            if (movePos.check())
-            {
-                attackedFigure = board->getFigure(movePos);
-                if (attackedFigure != nullptr)
-                {
-                    if (attackedFigure->color != color)
-                        vec.push_back(Move(this, movePos));
-                }
-                else
-                    vec.push_back(Move(this, movePos));
-            }
+            return attackedPiece == nullptr;
         }
 
     }

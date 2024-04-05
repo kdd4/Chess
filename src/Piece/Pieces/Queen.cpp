@@ -1,133 +1,111 @@
-#include "ChessLib/Figures/Queen.hpp"
+#include "ChessLib/Piece/Pieces/Queen.hpp"
 
 namespace Chess
 {
-    namespace Figures
+    namespace Pieces
     {
-        Queen::Queen(Position position, int color, Board* board, int moveCount, int lastMoveMoment, int prevLastMoveMoment, bool deleted) : Figure(position, color, Figures::Type::Queen, board, moveCount, lastMoveMoment, prevLastMoveMoment, deleted) {}
+        Queen::Queen(Position pos, PieceColor color, std::weak_ptr<Board>& board)
+            :
+            MovablePiece(pos, PieceType::Queen, color, board)
+        {}
 
-        Figure* Queen::clone(Board* board) const
+        Queen::Queen(Piece& piece, std::weak_ptr<Board>& board)
+            :
+            MovablePiece(piece, board)
         {
-            return new Queen(this->pos, this->color, board, this->moveCount, this->lastMoveMoment, this->prevLastMoveMoment, this->deleted);
+            type = PieceType::Bishop;
         }
 
-        void Queen::getMoves(std::vector<Move>& vec, bool onlyAttack) const
+        Queen::Queen(MovablePiece& right)
+            :
+            MovablePiece(right)
+        {
+            type = PieceType::Bishop;
+        }
+
+        std::shared_ptr<MovablePiece> Queen::clone(std::weak_ptr<Board> board) const
+        {
+            return std::make_shared<MovablePiece>(new Queen((Piece)*this, board));
+        }
+
+        void Queen::getMoves(std::vector<std::shared_ptr<Move>>& vec, bool onlyAttack) const
         {
             // X+
-            for (int x = pos.x + 1; x < 8; ++x)
+            for (int i = 1; i < 8; ++i)
             {
-                Position movePos(x, pos.y);
-                Figure* attackedFigure = board->getFigure(movePos);
-                if (attackedFigure != nullptr)
-                {
-                    if (attackedFigure->color != color)
-                        vec.push_back(Move(this, movePos));
-                    break;
-                }
-                vec.push_back(Move(this, movePos));
+                Position movePos(pos.x + i, pos.y);
+                if (!move(movePos, vec)) break;
             }
 
             // X-
-            for (int x = pos.x - 1; x >= 0; --x)
+            for (int i = 1; i < 8; ++i)
             {
-                Position movePos(x, pos.y);
-                Figure* attackedFigure = board->getFigure(movePos);
-                if (attackedFigure != nullptr)
-                {
-                    if (attackedFigure->color != color)
-                        vec.push_back(Move(this, movePos));
-                    break;
-                }
-                vec.push_back(Move(this, movePos));
+                Position movePos(pos.x - i, pos.y);
+                if (!move(movePos, vec)) break;
             }
 
             // Y+
-            for (int y = pos.y + 1; y < 8; ++y)
+            for (int i = 1; i < 8; ++i)
             {
-                Position movePos(pos.x, y);
-                Figure* attackedFigure = board->getFigure(movePos);
-                if (attackedFigure != nullptr)
-                {
-                    if (attackedFigure->color != color)
-                        vec.push_back(Move(this, movePos));
-                    break;
-                }
-                vec.push_back(Move(this, movePos));
+                Position movePos(pos.x, pos.y + i);
+                if (!move(movePos, vec)) break;
             }
 
             // Y-
-            for (int y = pos.y - 1; y >= 0; --y)
+            for (int i = 1; i < 8; ++i)
             {
-                Position movePos(pos.x, y);
-                Figure* attackedFigure = board->getFigure(movePos);
-                if (attackedFigure != nullptr)
-                {
-                    if (attackedFigure->color != color)
-                        vec.push_back(Move(this, movePos));
-                    break;
-                }
-                vec.push_back(Move(this, movePos));
+                Position movePos(pos.x, pos.y - i);
+                if (!move(movePos, vec)) break;
             }
 
             // X+Y+
             for (int i = 1; i < 8; ++i)
             {
                 Position movePos(pos.x + i, pos.y + i);
-                if (!movePos.check()) break;
-                Figure* attackedFigure = board->getFigure(movePos);
-                if (attackedFigure != nullptr)
-                {
-                    if (attackedFigure->color != color)
-                        vec.push_back(Move(this, movePos));
-                    break;
-                }
-                vec.push_back(Move(this, movePos));
+                if (!move(movePos, vec)) break;
             }
 
             // X+Y-
             for (int i = 1; i < 8; ++i)
             {
                 Position movePos(pos.x + i, pos.y - i);
-                if (!movePos.check()) break;
-                Figure* attackedFigure = board->getFigure(movePos);
-                if (attackedFigure != nullptr)
-                {
-                    if (attackedFigure->color != color)
-                        vec.push_back(Move(this, movePos));
-                    break;
-                }
-                vec.push_back(Move(this, movePos));
+                if (!move(movePos, vec)) break;
             }
 
             // X-Y+
             for (int i = 1; i < 8; ++i)
             {
                 Position movePos(pos.x - i, pos.y + i);
-                if (!movePos.check()) break;
-                Figure* attackedFigure = board->getFigure(movePos);
-                if (attackedFigure != nullptr)
-                {
-                    if (attackedFigure->color != color)
-                        vec.push_back(Move(this, movePos));
-                    break;
-                }
-                vec.push_back(Move(this, movePos));
+                if (!move(movePos, vec)) break;
             }
 
             // X-Y-
             for (int i = 1; i < 8; ++i)
             {
                 Position movePos(pos.x - i, pos.y - i);
-                if (!movePos.check()) break;
-                Figure* attackedFigure = board->getFigure(movePos);
-                if (attackedFigure != nullptr)
-                {
-                    if (attackedFigure->color != color)
-                        vec.push_back(Move(this, movePos));
-                    break;
-                }
-                vec.push_back(Move(this, movePos));
+                if (!move(movePos, vec)) break;
             }
+        }
+
+        bool Queen::move(const Position& pos, std::vector<std::shared_ptr<Move>>& vec) const
+        {
+            if (!pos.check()) return false;
+
+            std::shared_ptr<Piece> attackedPiece = board.lock()->getPiece(pos);
+
+            if (attackedPiece != nullptr)
+            {
+                if (attackedPiece->color == color)
+                    return false;
+            }
+
+            std::shared_ptr<ImplMove> move;
+
+            move->appendAttack(pos);
+            move->appendStep(this->pos, pos);
+            vec.push_back(move);
+
+            return attackedPiece == nullptr;
         }
     }
 }

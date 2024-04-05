@@ -38,4 +38,14 @@ namespace Chess
 	{
 		return moveMoment.size();
 	}
+
+	void IPiece::addMoveCount(int moveCnt)
+	{
+		moveMoment.push_back(moveCnt);
+	}
+
+	void IPiece::delMoveCount()
+	{
+		moveMoment.pop_back();
+	}
 }

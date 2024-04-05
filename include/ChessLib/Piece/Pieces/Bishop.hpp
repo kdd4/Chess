@@ -5,9 +5,10 @@
 
 #include "ChessLib/Piece/Enums.hpp"
 #include "ChessLib/Position.hpp"
-#include "ChessLib/Move.hpp"
+#include "ChessLib/ImplMove.hpp"
 
 #include <vector>
+#include <memory>
 
 namespace Chess
 {
@@ -16,12 +17,15 @@ namespace Chess
         class Bishop : public IMovablePiece
         {
         public:
-            Bishop(Position pos, PieceColor color, Board board);
-            Bishop(Piece data, Board board);
-            Bishop(const MovablePiece right);
+            Bishop(Position pos, PieceColor color, std::weak_ptr<Board>& board);
+            Bishop(Piece& piece, std::weak_ptr<Board>& board);
+            Bishop(MovablePiece& right);
 
-            MovablePiece clone(Board board) const override final;
-            void getMoves(std::vector<Move>& vec, bool onlyAttack = false) const override final;
+            std::shared_ptr<MovablePiece> clone(std::weak_ptr<Board> board) const override final;
+            void getMoves(std::vector<std::shared_ptr<Move>>& vec, bool onlyAttack = false) const override final;
+
+        private:
+            bool move(const Position& pos, std::vector<std::shared_ptr<Move>>& vec) const;
         };
     }
 }

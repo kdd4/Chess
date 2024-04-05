@@ -17,6 +17,9 @@ namespace Chess
         int getLastMoveMoment() const;
         int getMoveCount() const;
 
+        void addMoveCount(int moveCnt);
+        void delMoveCount();
+
         Position pos;
 
         PieceType type = PieceType::Null;

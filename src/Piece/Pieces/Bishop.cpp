@@ -1,77 +1,83 @@
-#include "ChessLib/Figures/Bishop.hpp"
+#include "ChessLib/Piece/Pieces/Bishop.hpp"
 
 namespace Chess
 {
-    namespace Figures
+    namespace Pieces
     {
-        Bishop::Bishop(Position position, int color, Board* board, int moveCount, int lastMoveMoment, int prevLastMoveMoment, bool deleted) : Figure(position, color, Figures::Type::Bishop, board, moveCount, lastMoveMoment, prevLastMoveMoment, deleted) {}
-        
-        Figure* Bishop::clone(Board* board) const
+        Bishop::Bishop(Position pos, PieceColor color, std::weak_ptr<Board>& board)
+            :
+            MovablePiece(pos, PieceType::Bishop, color, board)
+        {}
+
+        Bishop::Bishop(Piece& piece, std::weak_ptr<Board>& board)
+            :
+            MovablePiece(piece, board)
         {
-            return new Bishop(this->pos, this->color, board, this->moveCount, this->lastMoveMoment, this->prevLastMoveMoment, this->deleted);
+            type = PieceType::Bishop;
         }
 
-        void Bishop::getMoves(std::vector<Move>& vec, bool onlyAttack) const
+        Bishop::Bishop(MovablePiece& right)
+            :
+            MovablePiece(right)
+        {
+            type = PieceType::Bishop;
+        }
+
+        std::shared_ptr<MovablePiece> Bishop::clone(std::weak_ptr<Board> board) const
+        {
+            return std::make_shared<MovablePiece>(new Bishop((Piece)*this, board));
+        }
+
+        void Bishop::getMoves(std::vector<std::shared_ptr<Move>>& vec, bool onlyAttack) const
         {
             // X+Y+
             for (int i = 1; i < 8; ++i)
             {
                 Position movePos(pos.x + i, pos.y + i);
-                if (!movePos.check()) break;
-                Figure* attackedFigure = board->getFigure(movePos);
-                if (attackedFigure != nullptr)
-                {
-                    if (attackedFigure->color != color)
-                        vec.push_back(Move(this, movePos));
-                    break;
-                }
-                vec.push_back(Move(this, movePos));
+                if (!move(movePos, vec)) break;
             }
 
             // X+Y-
             for (int i = 1; i < 8; ++i)
             {
                 Position movePos(pos.x + i, pos.y - i);
-                if (!movePos.check()) break;
-                Figure* attackedFigure = board->getFigure(movePos);
-                if (attackedFigure != nullptr)
-                {
-                    if (attackedFigure->color != color)
-                        vec.push_back(Move(this, movePos));
-                    break;
-                }
-                vec.push_back(Move(this, movePos));
+                if (!move(movePos, vec)) break;
             }
 
             // X-Y+
             for (int i = 1; i < 8; ++i)
             {
                 Position movePos(pos.x - i, pos.y + i);
-                if (!movePos.check()) break;
-                Figure* attackedFigure = board->getFigure(movePos);
-                if (attackedFigure != nullptr)
-                {
-                    if (attackedFigure->color != color)
-                        vec.push_back(Move(this, movePos));
-                    break;
-                }
-                vec.push_back(Move(this, movePos));
+                if (!move(movePos, vec)) break;
             }
 
             // X-Y-
             for (int i = 1; i < 8; ++i)
             {
                 Position movePos(pos.x - i, pos.y - i);
-                if (!movePos.check()) break;
-                Figure* attackedFigure = board->getFigure(movePos);
-                if (attackedFigure != nullptr)
-                {
-                    if (attackedFigure->color != color)
-                        vec.push_back(Move(this, movePos));
-                    break;
-                }
-                vec.push_back(Move(this, movePos));
+                if (!move(movePos, vec)) break;
             }
+        }
+
+        bool Bishop::move(const Position& pos, std::vector<std::shared_ptr<Move>>& vec) const
+        {
+            if (!pos.check()) return false;
+
+            std::shared_ptr<Piece> attackedPiece = board.lock()->getPiece(pos);
+
+            if (attackedPiece != nullptr)
+            {
+                if (attackedPiece->color == color)
+                    return false;
+            }
+
+            std::shared_ptr<ImplMove> move;
+            
+            move->appendAttack(pos);
+            move->appendStep(this->pos, pos);
+            vec.push_back(move);
+
+            return attackedPiece == nullptr;
         }
     }
 }

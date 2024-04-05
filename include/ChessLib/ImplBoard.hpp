@@ -22,8 +22,8 @@ namespace Chess
         ImplBoard();
         ImplBoard(const ImplBoard& right);
 
-        int getPieceId(const Position& pos) const;
-        std::shared_ptr<MovablePiece> getMovablePiece(const Position& pos) const;
+        int getPieceId(const Position& pos, bool deleted = false) const;
+        std::shared_ptr<MovablePiece> getMovablePiece(const Position& pos, bool deleted = false) const;
 
         std::shared_ptr<Piece> getPiece(const Position& pos) const override;
         std::vector<std::shared_ptr<Piece>> getPieces(PieceType type, PieceColor color) const override;
