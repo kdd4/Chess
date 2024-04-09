@@ -9,14 +9,14 @@ namespace Chess
             MovablePiece(pos, PieceType::Knight, color, board)
         {}
 
-        Knight::Knight(Piece& piece, std::weak_ptr<Board>& board)
+        Knight::Knight(const Piece& piece, std::weak_ptr<Board> board)
             :
             MovablePiece(piece, board)
         {
             type = PieceType::Knight;
         }
 
-        Knight::Knight(MovablePiece& right)
+        Knight::Knight(const MovablePiece& right)
             :
             MovablePiece(right)
         {
@@ -25,7 +25,8 @@ namespace Chess
 
         std::shared_ptr<MovablePiece> Knight::clone(std::weak_ptr<Board> board) const
         {
-            return std::make_shared<MovablePiece>(new Knight((Piece)*this, board));
+            std::shared_ptr<MovablePiece> copy(new Knight(*this, board));
+            return copy;
         }
 
         void Knight::getMoves(std::vector<std::shared_ptr<Move>>& vec, bool onlyAttack) const

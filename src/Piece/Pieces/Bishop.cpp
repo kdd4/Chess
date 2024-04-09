@@ -9,14 +9,14 @@ namespace Chess
             MovablePiece(pos, PieceType::Bishop, color, board)
         {}
 
-        Bishop::Bishop(Piece& piece, std::weak_ptr<Board>& board)
+        Bishop::Bishop(const Piece& piece, std::weak_ptr<Board> board)
             :
             MovablePiece(piece, board)
         {
             type = PieceType::Bishop;
         }
 
-        Bishop::Bishop(MovablePiece& right)
+        Bishop::Bishop(const MovablePiece& right)
             :
             MovablePiece(right)
         {
@@ -25,7 +25,8 @@ namespace Chess
 
         std::shared_ptr<MovablePiece> Bishop::clone(std::weak_ptr<Board> board) const
         {
-            return std::make_shared<MovablePiece>(new Bishop((Piece)*this, board));
+            std::shared_ptr<MovablePiece> copy(new Bishop(*this, board));
+            return copy;
         }
 
         void Bishop::getMoves(std::vector<std::shared_ptr<Move>>& vec, bool onlyAttack) const

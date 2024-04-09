@@ -27,6 +27,11 @@ namespace Chess
         return !(x == right.x && y == right.y);
     }
 
+    bool Position::operator<(const Position& right) const
+    {
+        return (y == right.y) ? x < right.x : y < right.y;
+    }
+
     bool Position::check() const
     {
         return (x >= 0 && x <= 7 && y >= 0 && y <= 7);

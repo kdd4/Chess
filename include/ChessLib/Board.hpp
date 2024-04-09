@@ -21,9 +21,11 @@ namespace Chess
 		virtual void getMoves(const Position& pos, std::vector<std::shared_ptr<Move>>& vec) const = 0;
 		virtual void getMoves(std::vector<std::shared_ptr<Move>>& vec, const PieceColor color = PieceColor::All) const = 0;
 
-		virtual PieceColor getResult() const = 0;
 		virtual PieceColor getMoveColor() const = 0;
 		virtual int getMoveCount() const = 0;
+
+		virtual void makeMove(const std::shared_ptr<Move> move) = 0;
+		virtual void cancelMove(const std::shared_ptr<Move> move) = 0;
 	};
 
 	typedef IBoard Board;

@@ -3,8 +3,7 @@
 namespace Chess
 {
     ImplBoard::ImplBoard() :
-        Result(PieceColor::Null),
-        MoveColor(PieceColor::Null),
+        Pieces({}),
         MoveCounter(-1)
     {
         reset();
@@ -12,13 +11,12 @@ namespace Chess
 
     ImplBoard::ImplBoard(const ImplBoard& right)
         :
-        Result(right.Result),
-        MoveColor(right.MoveColor),
+        Pieces({}),
         MoveCounter(right.MoveCounter)
     {
         for (std::shared_ptr<MovablePiece> piece : right.Pieces)
         {
-            Pieces.push_back(piece->clone(std::make_shared<Board>(this)));
+            Pieces.push_back(piece->clone(std::shared_ptr<Board>(this)));
         }
     }
 
@@ -42,6 +40,19 @@ namespace Chess
         int id = getPieceId(pos, moveMoment, deleted);
 
         return (id != -1) ? Pieces[id] : nullptr;
+    }
+
+    void ImplBoard::getAttackMoves(std::vector<std::shared_ptr<Move>>& vec, const PieceColor color) const
+    {
+        for (std::shared_ptr<MovablePiece> piece : Pieces)
+        {
+            if (color != PieceColor::All)
+            {
+                if (piece->color != color)
+                    continue;
+            }
+            piece->getMoves(vec, true);
+        }
     }
 
     std::shared_ptr<Piece> ImplBoard::getPiece(const Position& pos) const
@@ -91,22 +102,27 @@ namespace Chess
         getMovablePiece(pos)->getMoves(vec);
     }
 
-    void ImplBoard::getMoves(std::vector<std::shared_ptr<Move>>& vec) const
+    void ImplBoard::getMoves(std::vector<std::shared_ptr<Move>>& vec, const PieceColor color) const
     {
         for (std::shared_ptr<MovablePiece> piece : Pieces)
         {
+            if (color != PieceColor::All)
+            {
+                if (piece->color != color)
+                    continue;
+            }
             piece->getMoves(vec);
         }
     }
 
-    PieceColor ImplBoard::getResult() const
-    {
-        return Result;
-    }
-
     PieceColor ImplBoard::getMoveColor() const
     {
-        return MoveColor;
+        return (MoveCounter & 1) ? PieceColor::Black : PieceColor::White;
+    }
+
+    int ImplBoard::getMoveCount() const
+    {
+        return MoveCounter;
     }
 
     void ImplBoard::makeMove(const std::shared_ptr<Move> move)
@@ -231,27 +247,27 @@ namespace Chess
         switch (type)
         {
         case PieceType::Pawn:
-            new_piece = std::make_shared<MovablePiece>(new Pieces::Pawn(*piece));
+            new_piece = std::shared_ptr<MovablePiece>(new Pieces::Pawn(*piece));
             break;
 
         case PieceType::Rook:
-            new_piece = std::make_shared<MovablePiece>(new Pieces::Rook(*piece));
+            new_piece = std::shared_ptr<MovablePiece>(new Pieces::Rook(*piece));
             break;
 
         case PieceType::Knight:
-            new_piece = std::make_shared<MovablePiece>(new Pieces::Knight(*piece));
+            new_piece = std::shared_ptr<MovablePiece>(new Pieces::Knight(*piece));
             break;
 
         case PieceType::Bishop:
-            new_piece = std::make_shared<MovablePiece>(new Pieces::Bishop(*piece));
+            new_piece = std::shared_ptr<MovablePiece>(new Pieces::Bishop(*piece));
             break;
 
         case PieceType::Queen:
-            new_piece = std::make_shared<MovablePiece>(new Pieces::Queen(*piece));
+            new_piece = std::shared_ptr<MovablePiece>(new Pieces::Queen(*piece));
             break;
 
         case PieceType::King:
-            new_piece = std::make_shared<MovablePiece>(new Pieces::King(*piece));
+            new_piece = std::shared_ptr<MovablePiece>(new Pieces::King(*piece));
             break;
 
         default:
@@ -264,11 +280,9 @@ namespace Chess
 
     void ImplBoard::reset()
     {
-        Result = PieceColor::Null;
-        MoveColor = PieceColor::White;
         MoveCounter = 0;
 
-        std::weak_ptr<Board> brd(std::make_shared<Board>(this));
+        std::weak_ptr<Board> brd(std::shared_ptr<Board>(this));
 
         for (int i = 0; i < 8; ++i)
         {
@@ -298,6 +312,9 @@ namespace Chess
 
     void ImplBoard::addPiece(MovablePiece* piece)
     {
-        Pieces.push_back(std::make_shared<MovablePiece>(piece));
+        if (Pieces.size() == 0) 
+            Pieces = { std::shared_ptr<MovablePiece>(piece) };
+        else
+            Pieces.push_back(std::shared_ptr<MovablePiece>(piece));
     }
 }

@@ -14,6 +14,8 @@ namespace Chess
         bool operator==(const Position& right) const;
         bool operator!=(const Position& right) const;
 
+        bool operator<(const Position& right) const;
+
         bool check() const;
     };
 }

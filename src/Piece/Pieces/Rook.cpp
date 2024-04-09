@@ -9,14 +9,14 @@ namespace Chess
             MovablePiece(pos, PieceType::Rook, color, board)
         {}
 
-        Rook::Rook(Piece& piece, std::weak_ptr<Board>& board)
+        Rook::Rook(const Piece& piece, std::weak_ptr<Board> board)
             :
             MovablePiece(piece, board)
         {
             type = PieceType::Rook;
         }
 
-        Rook::Rook(MovablePiece& right)
+        Rook::Rook(const MovablePiece& right)
             :
             MovablePiece(right)
         {
@@ -25,7 +25,8 @@ namespace Chess
 
         std::shared_ptr<MovablePiece> Rook::clone(std::weak_ptr<Board> board) const
         {
-            return std::make_shared<MovablePiece>(new Rook((Piece)*this, board));
+            std::shared_ptr<MovablePiece> copy(new Rook(*this, board));
+            return copy;
         }
 
         void Rook::getMoves(std::vector<std::shared_ptr<Move>>& vec, bool onlyAttack) const

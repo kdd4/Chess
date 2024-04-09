@@ -18,8 +18,8 @@ namespace Chess
         {
         public:
             Bishop(Position pos, PieceColor color, std::weak_ptr<Board>& board);
-            Bishop(Piece& piece, std::weak_ptr<Board>& board);
-            Bishop(MovablePiece& right);
+            Bishop(const Piece& piece, std::weak_ptr<Board> board);
+            Bishop(const MovablePiece& right);
 
             std::shared_ptr<MovablePiece> clone(std::weak_ptr<Board> board) const override final;
             void getMoves(std::vector<std::shared_ptr<Move>>& vec, bool onlyAttack = false) const override final;

@@ -29,7 +29,7 @@ namespace Chess
 
 	void ImplMove::appendStep(Position old_pos, Position new_pos)
 	{
-		steps.insert(old_pos, new_pos);
+		steps.insert(std::make_pair(old_pos, new_pos));
 	}
 
 	void ImplMove::appendAttack(Position attacked_pos)

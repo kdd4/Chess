@@ -9,14 +9,14 @@ namespace Chess
             MovablePiece(pos, PieceType::King, color, board)
         {}
 
-        King::King(Piece& piece, std::weak_ptr<Board>& board)
+        King::King(const Piece& piece, std::weak_ptr<Board> board)
             :
             MovablePiece(piece, board)
         {
             type = PieceType::King;
         }
 
-        King::King(MovablePiece& right)
+        King::King(const MovablePiece& right)
             :
             MovablePiece(right)
         {
@@ -25,7 +25,8 @@ namespace Chess
 
         std::shared_ptr<MovablePiece> King::clone(std::weak_ptr<Board> board) const
         {
-            return std::make_shared<MovablePiece>(new King((Piece)*this, board));
+            std::shared_ptr<MovablePiece> copy(new King(*this, board));
+            return copy;
         }
 
         void King::getMoves(std::vector<std::shared_ptr<Move>>& vec, bool onlyAttack) const
@@ -50,7 +51,7 @@ namespace Chess
                             continue;
                     }
                     
-                    move = std::make_shared<ImplMove>(new ImplMove(board));
+                    move = std::shared_ptr<ImplMove>(new ImplMove(board));
                     move->appendStep(pos, move_step);
                     move->appendAttack(move_step);
                     vec.push_back(move);
@@ -78,50 +79,75 @@ namespace Chess
 
             for (int x = pos.x - 1; x > 0; --x)
             {
-                if (board.lock()->getPiece(Position(x, pos.y)) != nullptr) return;
+                if (board.lock()->getPiece(Position(x, pos.y)) != nullptr)
+                    return;
             }
+            
+            std::vector<Position> checkingPosition = { Position(pos.x - 1, pos.y), Position(pos.x - 2, pos.y) };
+            PieceColor enemyColor = (color == PieceColor::White) ? PieceColor::Black : PieceColor::White;
 
-            Position pos1 = Position(pos.x - 1, pos.y);
-            Position pos2 = Position(pos.x - 2, pos.y);
+            std::vector<std::shared_ptr<Move>> enemyMoves;
+            board.lock()->getMoves(enemyMoves, enemyColor);
 
-            std::vector<Move> enemyMoves = board.lock()->getMoves(board->findFigures(Figures::Type::Null, color * (-1)), true);
-            for (Move& mv : enemyMoves)
+            for (std::shared_ptr<Move>& enemyMove : enemyMoves)
             {
-                if (mv.attackedFigure == nullptr) continue;
-                if (pos1 == mv.attackedFigure->pos || pos2 == mv.attackedFigure->pos) return;
+                for (const Position& attacked_pos : enemyMove->getAttackedPositions())
+                {
+                    for (const Position& checkPos : checkingPosition)
+                    {
+                        if (checkPos == attacked_pos)
+                            return;
+                    }
+                }
             }
 
-            Move moving(this, Position(pos.x - 2, pos.y), nullptr);
-            moving.addAdditionalMove(MoveEvent(figureRook, Position(pos.x - 1, pos.y)));
-            vec.push_back(moving);
+            std::shared_ptr<ImplMove> move(new ImplMove(board));
+            move->appendStep(pos, Position(pos.x - 2, pos.y));
+            move->appendStep(figureRook->pos, Position(pos.x - 1, pos.y));
+
+            vec.push_back(move);
         }
 
         void King::KingsideCastling(std::vector<std::shared_ptr<Move>>& vec) const
         {
-            if (moveCount != 0) return;
+            if (this->getMoveCount() != 0) return;
 
-            Figure* figureRook = board->getFigure(Position(7, pos.y));
-            if (figureRook == nullptr) return;
-            if (figureRook->type != Figures::Type::Rook || figureRook->color != color || figureRook->moveCount != 0) return;
+            std::shared_ptr<Piece> figureRook = board.lock()->getPiece(Position(7, pos.y));
+            if(figureRook == nullptr) return;
+            if (figureRook->type != PieceType::Rook || \
+
+                figureRook->color != color || \
+                figureRook->getMoveCount() != 0) return;
 
             for (int x = pos.x + 1; x < 7; ++x)
             {
-                if (board->getFigure(Position(x, pos.y)) != nullptr) return;
+                if (board.lock()->getPiece(Position(x, pos.y)) != nullptr)
+                    return;
             }
 
-            Position pos1 = Position(pos.x + 1, pos.y);
-            Position pos2 = Position(pos.x + 2, pos.y);
+            std::vector<Position> checkingPosition = { Position(pos.x + 1, pos.y), Position(pos.x + 2, pos.y) };
+            PieceColor enemyColor = (color == PieceColor::White) ? PieceColor::Black : PieceColor::White;
 
-            std::vector<Move> enemyMoves = board->getAllMoves(board->findFigures(Figures::Type::Null, color * (-1)), true);
-            for (Move& mv : enemyMoves)
+            std::vector<std::shared_ptr<Move>> enemyMoves;
+            board.lock()->getMoves(enemyMoves, enemyColor);
+
+            for (std::shared_ptr<Move>& enemyMove : enemyMoves)
             {
-                if (mv.attackedFigure == nullptr) continue;
-                if (pos1 == mv.attackedFigure->pos || pos2 == mv.attackedFigure->pos) return;
+                for (const Position& attacked_pos : enemyMove->getAttackedPositions())
+                {
+                    for (const Position& checkPos : checkingPosition)
+                    {
+                        if (checkPos == attacked_pos)
+                            return;
+                    }
+                }
             }
 
-            Move moving(this, Position(pos.x + 2, pos.y), nullptr);
-            moving.addAdditionalMove(MoveEvent(figureRook, Position(pos.x + 1, pos.y)));
-            vec.push_back(moving);
+            std::shared_ptr<ImplMove> move(new ImplMove(board));
+            move->appendStep(pos, Position(pos.x + 2, pos.y));
+            move->appendStep(figureRook->pos, Position(pos.x + 1, pos.y));
+
+            vec.push_back(move);
         }
     }
 }

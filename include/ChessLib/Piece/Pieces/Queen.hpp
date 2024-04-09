@@ -18,8 +18,8 @@ namespace Chess
         {
         public:
             Queen(Position pos, PieceColor color, std::weak_ptr<Board>& board);
-            Queen(Piece& piece, std::weak_ptr<Board>& board);
-            Queen(MovablePiece& right);
+            Queen(const Piece& piece, std::weak_ptr<Board> board);
+            Queen(const MovablePiece& right);
 
             std::shared_ptr<MovablePiece> clone(std::weak_ptr<Board> board) const override final;
             void getMoves(std::vector<std::shared_ptr<Move>>& vec, bool onlyAttack = false) const override final;

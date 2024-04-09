@@ -9,14 +9,14 @@ namespace Chess
             MovablePiece(pos, PieceType::Pawn, color, board)
         {}
 
-        Pawn::Pawn(Piece& piece, std::weak_ptr<Board>& board)
+        Pawn::Pawn(const Piece& piece, std::weak_ptr<Board> board)
             :
             MovablePiece(piece, board)
         {
             type = PieceType::Pawn;
         }
 
-        Pawn::Pawn(MovablePiece& right)
+        Pawn::Pawn(const MovablePiece& right)
             :
             MovablePiece(right)
         {
@@ -25,7 +25,8 @@ namespace Chess
 
         std::shared_ptr<MovablePiece> Pawn::clone(std::weak_ptr<Board> board) const
         {
-            return std::make_shared<MovablePiece>(new Pawn((Piece)*this, board));
+            std::shared_ptr<MovablePiece> copy(new Pawn(*this, board));
+            return copy;
         }
 
         void Pawn::getMoves(std::vector<std::shared_ptr<Move>>& vec, bool onlyAttack) const
@@ -42,7 +43,7 @@ namespace Chess
                 move_place = board.lock()->getPiece(move_step);
                 if (move_place == nullptr)
                 {
-                    move = std::make_shared<ImplMove>(new ImplMove(board));
+                    move = std::shared_ptr<ImplMove>(new ImplMove(board));
                     move->appendStep(this->pos, move_step);
 
                     if (move_step.y == 7)
@@ -57,7 +58,7 @@ namespace Chess
                         attacked_place = board.lock()->getPiece(move_step);
                         if (attacked_place == nullptr)
                         {
-                            move = std::make_shared<ImplMove>(new ImplMove(board));
+                            move = std::shared_ptr<ImplMove>(new ImplMove(board));
                             move->appendStep(this->pos, move_step);
                             vec.push_back(move);
                         }
@@ -73,7 +74,7 @@ namespace Chess
                 {
                     if (attacked_place->color != color)
                     {
-                        move = std::make_shared<ImplMove>(new ImplMove(board));
+                        move = std::shared_ptr<ImplMove>(new ImplMove(board));
                         move->appendStep(this->pos, move_step);
                         move->appendAttack(move_step);
                         vec.push_back(move);
@@ -89,7 +90,7 @@ namespace Chess
                             if (attacked_place->getLastMoveMoment() == board.lock()->getMoveCount() - 1 \
                                 && attacked_place->getMoveCount() == 1)
                             {
-                                move = std::make_shared<ImplMove>(new ImplMove(board));
+                                move = std::shared_ptr<ImplMove>(new ImplMove(board));
                                 move->appendStep(this->pos, move_step);
                                 move->appendAttack(Position(pos.x + 1, pos.y));
                                 vec.push_back(move);
@@ -107,7 +108,7 @@ namespace Chess
                 {
                     if (attacked_place->color != color)
                     {
-                        move = std::make_shared<ImplMove>(new ImplMove(board));
+                        move = std::shared_ptr<ImplMove>(new ImplMove(board));
                         move->appendStep(this->pos, move_step);
                         move->appendAttack(move_step);
                         vec.push_back(move);
@@ -123,7 +124,7 @@ namespace Chess
                             if (attacked_place->getLastMoveMoment() == board.lock()->getMoveCount() - 1 \
                                 && attacked_place->getMoveCount() == 1)
                             {
-                                move = std::make_shared<ImplMove>(new ImplMove(board));
+                                move = std::shared_ptr<ImplMove>(new ImplMove(board));
                                 move->appendStep(this->pos, move_step);
                                 move->appendAttack(Position(pos.x - 1, pos.y));
                                 vec.push_back(move);

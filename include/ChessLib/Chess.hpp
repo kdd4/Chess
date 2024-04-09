@@ -14,21 +14,23 @@ namespace Chess
     public:
         Chess(PieceType (*getNewTypeWhite)(), PieceType (*getNewTypeBlack)());
         Chess(const Chess& right);
-        ~Chess();
 
-        const Piece get(Position pos) const;
+        const std::shared_ptr<Piece> get(Position pos) const;
         PieceColor getResult() const;
-        const Board& getBoard() const;
+        const std::shared_ptr<Board> getBoard() const;
 
         Chess& operator=(const Chess& right);
 
         bool moving(Position pos1, Position pos2);
 
     private:
-        Board* board;
+        std::shared_ptr<ImplBoard> board;
+        PieceColor result;
 
         PieceType (*getNewTypeWhite)();
         PieceType (*getNewTypeBlack)();
+
+        bool checkMove(std::shared_ptr<Move> move);
     };
 }
 
