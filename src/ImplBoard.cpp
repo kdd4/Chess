@@ -22,20 +22,24 @@ namespace Chess
         }
     }
 
-    int ImplBoard::getPieceId(const Position& pos, bool deleted) const
+    int ImplBoard::getPieceId(const Position& pos, int moveMoment, bool deleted) const
     {
         for (int i = 0; i < Pieces.size(); ++i)
         {
-            if (Pieces[i]->pos != pos) continue;
             if (Pieces[i]->deleted != deleted) continue;
+            if (Pieces[i]->pos != pos) continue;
+            if (moveMoment != -1)
+            {
+                if (Pieces[i]->getLastMoveMoment() != moveMoment) continue;
+            }
             return i;
         }
         return -1;
     }
 
-    std::shared_ptr<MovablePiece> ImplBoard::getMovablePiece(const Position& pos, bool deleted) const
+    std::shared_ptr<MovablePiece> ImplBoard::getMovablePiece(const Position& pos, int moveMoment, bool deleted) const
     {
-        int id = getPieceId(pos, deleted);
+        int id = getPieceId(pos, moveMoment, deleted);
 
         return (id != -1) ? Pieces[id] : nullptr;
     }
@@ -161,7 +165,7 @@ namespace Chess
 
         for (const std::pair<Position, Position>& step : move->getSteps())
         {
-            std::shared_ptr<MovablePiece> piece = getMovablePiece(step.second, true);
+            std::shared_ptr<Piece> piece = getPiece(step.second);
 
             if (piece == nullptr)
             {
@@ -193,7 +197,7 @@ namespace Chess
 
         for (const Position& attacked_pos : move->getAttackedPositions())
         {
-            std::shared_ptr<Piece> attacked_piece = getPiece(attacked_pos);
+            std::shared_ptr<Piece> attacked_piece = getMovablePiece(attacked_pos, MoveCounter - 1, true);
 
             if (attacked_piece == nullptr) continue;
 

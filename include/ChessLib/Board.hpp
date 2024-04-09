@@ -19,7 +19,7 @@ namespace Chess
 
 		virtual std::shared_ptr<Move> getMove(const Position& start_pos, const Position& end_pos) const = 0;
 		virtual void getMoves(const Position& pos, std::vector<std::shared_ptr<Move>>& vec) const = 0;
-		virtual void getMoves(std::vector<std::shared_ptr<Move>>& vec) const = 0;
+		virtual void getMoves(std::vector<std::shared_ptr<Move>>& vec, const PieceColor color = PieceColor::All) const = 0;
 
 		virtual PieceColor getResult() const = 0;
 		virtual PieceColor getMoveColor() const = 0;

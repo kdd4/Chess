@@ -28,9 +28,10 @@ namespace Chess
             return std::make_shared<MovablePiece>(new Rook((Piece)*this, board));
         }
 
-
         void Rook::getMoves(std::vector<std::shared_ptr<Move>>& vec, bool onlyAttack) const
         {
+            if (this->deleted) return;
+
             // X+
             for (int i = 1; i < 8; ++i)
             {
@@ -72,7 +73,7 @@ namespace Chess
                     return false;
             }
 
-            std::shared_ptr<ImplMove> move;
+            std::shared_ptr<ImplMove> move(new ImplMove(board));
 
             move->appendAttack(pos);
             move->appendStep(this->pos, pos);

@@ -30,6 +30,8 @@ namespace Chess
 
         void Knight::getMoves(std::vector<std::shared_ptr<Move>>& vec, bool onlyAttack) const
         {
+            if (this->deleted) return;
+
             move({ pos.x + 1, pos.y + 2 }, vec);
             move({ pos.x + 1, pos.y - 2 }, vec);
             move({ pos.x - 1, pos.y + 2 }, vec);
@@ -53,7 +55,7 @@ namespace Chess
                     return false;
             }
 
-            std::shared_ptr<ImplMove> move;
+            std::shared_ptr<ImplMove> move(new ImplMove(board));
 
             move->appendAttack(pos);
             move->appendStep(this->pos, pos);

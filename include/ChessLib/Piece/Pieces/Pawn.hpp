@@ -1,29 +1,28 @@
 #pragma once
 
-#include "ChessLib/Piece/IPiece.hpp"
-#include "ChessLib/IBoard.hpp"
+#include "ChessLib/Piece/MovablePiece.hpp"
+#include "ChessLib/Board.hpp"
 
-#include "ChessLib/Move.hpp"
+#include "ChessLib/Piece/Enums.hpp"
+#include "ChessLib/Position.hpp"
+#include "ChessLib/ImplMove.hpp"
 
 #include <vector>
+#include <memory>
 
 namespace Chess
 {
     namespace Pieces
     {
-        class Pawn : public IPiece
+        class Pawn : public IMovablePiece
         {
         public:
-            Pawn(Position pos, PieceColor color, IBoard* board);
-            Pawn(IPieceable* data, IAllocatable* loc);
-            Pawn(const IPiece& right);
+            Pawn(Position pos, PieceColor color, std::weak_ptr<Board>& board);
+            Pawn(Piece& piece, std::weak_ptr<Board>& board);
+            Pawn(MovablePiece& right);
 
-            IPiece* clone(IBoard* board) const override final;
-            void getMoves(std::vector<IMove*>& vec, bool onlyAttack = false) const override final;
-
-        private:
-            Move* moveGenerator(Position start_pos, Position end_pos);
-            Move* moveGenerator(Position start_pos, Position end_pos, Position attacked_pos);
+            std::shared_ptr<MovablePiece> clone(std::weak_ptr<Board> board) const override final;
+            void getMoves(std::vector<std::shared_ptr<Move>>& vec, bool onlyAttack = false) const override final;
         };
     }
 }

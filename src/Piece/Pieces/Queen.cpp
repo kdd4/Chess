@@ -13,14 +13,14 @@ namespace Chess
             :
             MovablePiece(piece, board)
         {
-            type = PieceType::Bishop;
+            type = PieceType::Queen;
         }
 
         Queen::Queen(MovablePiece& right)
             :
             MovablePiece(right)
         {
-            type = PieceType::Bishop;
+            type = PieceType::Queen;
         }
 
         std::shared_ptr<MovablePiece> Queen::clone(std::weak_ptr<Board> board) const
@@ -30,6 +30,8 @@ namespace Chess
 
         void Queen::getMoves(std::vector<std::shared_ptr<Move>>& vec, bool onlyAttack) const
         {
+            if (this->deleted) return;
+
             // X+
             for (int i = 1; i < 8; ++i)
             {
@@ -99,7 +101,7 @@ namespace Chess
                     return false;
             }
 
-            std::shared_ptr<ImplMove> move;
+            std::shared_ptr<ImplMove> move(new ImplMove(board));
 
             move->appendAttack(pos);
             move->appendStep(this->pos, pos);

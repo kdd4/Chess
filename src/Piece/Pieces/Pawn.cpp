@@ -2,122 +2,137 @@
 
 namespace Chess
 {
-    namespace Piece
+    namespace Pieces
     {
-        Pawn::Pawn(Position pos, PieceColor color, IBoard* board)
+        Pawn::Pawn(Position pos, PieceColor color, std::weak_ptr<Board>& board)
             :
-            IPiece(IPieceable(pos, PieceType::Pawn, color), IAllocatable(board))
+            MovablePiece(pos, PieceType::Pawn, color, board)
         {}
 
-        Pawn::Pawn(IPieceable* pieceable, IAllocatable* allocatable)
+        Pawn::Pawn(Piece& piece, std::weak_ptr<Board>& board)
             :
-            IPiece(*pieceable, *allocatable)
+            MovablePiece(piece, board)
         {
             type = PieceType::Pawn;
         }
 
-        Pawn::Pawn(const IPiece& right)
+        Pawn::Pawn(MovablePiece& right)
             :
-            IPiece(right)
+            MovablePiece(right)
         {
             type = PieceType::Pawn;
         }
 
-        IPiece* Pawn::clone(IBoard* board) const
+        std::shared_ptr<MovablePiece> Pawn::clone(std::weak_ptr<Board> board) const
         {
-            return new Pawn(*this);
+            return std::make_shared<MovablePiece>(new Pawn((Piece)*this, board));
         }
 
-        void Pawn::getMoves(std::vector<IMove*>& vec, bool onlyAttack) const
+        void Pawn::getMoves(std::vector<std::shared_ptr<Move>>& vec, bool onlyAttack) const
         {
-            if (deleted) return;
-            if (pos.y + getDirection() >= 8 || pos.y + getDirection() < 0) return;
+            if (this->deleted) return;
 
-            Position movePos = Position(pos.x, pos.y + getDirection());
-            IPieceable* piece = board->getPiece(movePos);
-            if (piece == nullptr && !onlyAttack)
-            {
-                vec.push_back(moveGenerator(pos, movePos));
-                movePos = Position(pos.x, pos.y + getDirection() * 2);
-                if (this->getLastMoveMoment() == -1 && movePos.check())
-                {
-                    piece = board->getPiece(movePos);
-                    if (piece == nullptr)
-                    {
-                        vec.push_back(moveGenerator(pos, movePos));
-                    }
-                }
-            }
+            std::shared_ptr<ImplMove> move;
+            std::shared_ptr<Piece> attacked_place, move_place;
+            Position move_step;
 
-            if (pos.x != 7)
+            move_step = Position(pos.x, pos.y + getDirection());
+            if (!onlyAttack && move_step.check())
             {
-                movePos = Position(pos.x + 1, pos.y + getDirection());
-                piece = board->getPiece(movePos);
-                if (piece != nullptr)
+                move_place = board.lock()->getPiece(move_step);
+                if (move_place == nullptr)
                 {
-                    if (piece->color != color)
+                    move = std::make_shared<ImplMove>(new ImplMove(board));
+                    move->appendStep(this->pos, move_step);
+
+                    if (move_step.y == 7)
                     {
-                        vec.push_back(moveGenerator(pos, movePos, movePos));
+                        move->changeType(pos, type, PieceType::Queen); // CHANGE IT
                     }
-                }
-                else
-                {
-                    piece = board->getPiece(Position(pos.x + 1, pos.y));
-                    if (piece != nullptr)
+                    vec.push_back(move);
+
+                    move_step = Position(pos.x, pos.y + getDirection() * 2);
+                    if (this->getLastMoveMoment() == -1 && move_step.check())
                     {
-                        if (piece->color != color && piece->type == PieceType::Pawn)
+                        attacked_place = board.lock()->getPiece(move_step);
+                        if (attacked_place == nullptr)
                         {
-                            if (piece->getMoveCount() == 1 && piece->getLastMoveMoment() == board->moveCounter - 1)
-                                vec.push_back(moveGenerator(pos, Position(pos.x + 1, pos.y + getDirection()), Position(pos.x + 1, pos.y)));
+                            move = std::make_shared<ImplMove>(new ImplMove(board));
+                            move->appendStep(this->pos, move_step);
+                            vec.push_back(move);
                         }
                     }
                 }
             }
 
-            if (pos.x != 0)
+            move_step = Position(pos.x + 1, pos.y + getDirection());
+            if (move_step.check())
             {
-                movePos = Position(pos.x - 1, pos.y + getDirection());
-                piece = board->getPiece(movePos);
-                if (piece != nullptr)
+                attacked_place = board.lock()->getPiece(move_step);
+                if (attacked_place != nullptr)
                 {
-                    if (piece->color != color)
+                    if (attacked_place->color != color)
                     {
-                        vec.push_back(moveGenerator(pos, movePos, movePos));
+                        move = std::make_shared<ImplMove>(new ImplMove(board));
+                        move->appendStep(this->pos, move_step);
+                        move->appendAttack(move_step);
+                        vec.push_back(move);
                     }
                 }
-                else
+                else // attacked_place == nullptr
                 {
-                    piece = board->getPiece(Position(pos.x - 1, pos.y));
-                    if (piece != nullptr)
+                    attacked_place = board.lock()->getPiece(Position(pos.x + 1, pos.y));
+                    if (attacked_place != nullptr)
                     {
-                        if (piece->color != color && piece->type == PieceType::Pawn)
+                        if (attacked_place->color != color && attacked_place->type == PieceType::Pawn)
                         {
-                            if (piece->getMoveCount() == 1 && piece->getLastMoveMoment() == board->moveCounter - 1)
-                                vec.push_back(moveGenerator(pos, Position(pos.x - 1, pos.y + getDirection()), Position(pos.x - 1, pos.y)));
+                            if (attacked_place->getLastMoveMoment() == board.lock()->getMoveCount() - 1 \
+                                && attacked_place->getMoveCount() == 1)
+                            {
+                                move = std::make_shared<ImplMove>(new ImplMove(board));
+                                move->appendStep(this->pos, move_step);
+                                move->appendAttack(Position(pos.x + 1, pos.y));
+                                vec.push_back(move);
+                            }
+                        }
+                    }
+                }
+            }
+
+            move_step = Position(pos.x - 1, pos.y + getDirection());
+            if (move_step.check())
+            {
+                attacked_place = board.lock()->getPiece(move_step);
+                if (attacked_place != nullptr)
+                {
+                    if (attacked_place->color != color)
+                    {
+                        move = std::make_shared<ImplMove>(new ImplMove(board));
+                        move->appendStep(this->pos, move_step);
+                        move->appendAttack(move_step);
+                        vec.push_back(move);
+                    }
+                }
+                else // attacked_place == nullptr
+                {
+                    attacked_place = board.lock()->getPiece(Position(pos.x - 1, pos.y));
+                    if (attacked_place != nullptr)
+                    {
+                        if (attacked_place->color != color && attacked_place->type == PieceType::Pawn)
+                        {
+                            if (attacked_place->getLastMoveMoment() == board.lock()->getMoveCount() - 1 \
+                                && attacked_place->getMoveCount() == 1)
+                            {
+                                move = std::make_shared<ImplMove>(new ImplMove(board));
+                                move->appendStep(this->pos, move_step);
+                                move->appendAttack(Position(pos.x - 1, pos.y));
+                                vec.push_back(move);
+                            }
                         }
                     }
                 }
             }
         }
 
-        IMove* Pawn::moveGenerator(Position start_pos, Position end_pos)
-        {
-            Move* move = new Move(start_pos, end_pos);
-            if (end_pos.y == 0 || end_pos.y == 7)
-            {
-                move->updateType(start_pos, PieceType::Pawn, PieceType::Queen);
-            }
-            return move;
-        }
-
-        IMove* Pawn::moveGenerator(Position start_pos, Position end_pos, Position attacked_pos)
-        {
-            Move* move = new Move(start_pos, end_pos, attacked_pos);
-            if (end_pos.y == 0 || end_pos.y == 7)
-            {
-                move->updateType(start_pos, PieceType::Pawn, PieceType::Queen);
-            }
-            return move;
-        }
     }
 }
