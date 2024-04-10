@@ -40,7 +40,6 @@ namespace Chess
         void cancelMove(const std::shared_ptr<Move> move) override;
 
     private:
-        void reset();
         void addPiece(MovablePiece* piece);
         void changeType(const Position& pos, const PieceType type);
 

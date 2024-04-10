@@ -3,15 +3,38 @@
 namespace Chess
 {
     ImplBoard::ImplBoard() :
-        Pieces({}),
-        MoveCounter(-1)
+        MoveCounter(0)
     {
-        reset();
+        std::weak_ptr<Board> brd(std::shared_ptr<Board>(this));
+
+        for (int i = 0; i < 8; ++i)
+        {
+            addPiece(new Pieces::Pawn(Position(i, 1), PieceColor::White, brd));
+
+            addPiece(new Pieces::Pawn(Position(i, 6), PieceColor::Black, brd));
+        }
+
+        addPiece(new Pieces::Rook(Position(0, 0), PieceColor::White, brd));
+        addPiece(new Pieces::Rook(Position(7, 0), PieceColor::White, brd));
+        addPiece(new Pieces::Knight(Position(1, 0), PieceColor::White, brd));
+        addPiece(new Pieces::Knight(Position(6, 0), PieceColor::White, brd));
+        addPiece(new Pieces::Bishop(Position(2, 0), PieceColor::White, brd));
+        addPiece(new Pieces::Bishop(Position(5, 0), PieceColor::White, brd));
+        addPiece(new Pieces::Queen(Position(4, 0), PieceColor::White, brd));
+        addPiece(new Pieces::King(Position(3, 0), PieceColor::White, brd));
+
+        addPiece(new Pieces::Rook(Position(0, 7), PieceColor::Black, brd));
+        addPiece(new Pieces::Rook(Position(7, 7), PieceColor::Black, brd));
+        addPiece(new Pieces::Knight(Position(1, 7), PieceColor::Black, brd));
+        addPiece(new Pieces::Knight(Position(6, 7), PieceColor::Black, brd));
+        addPiece(new Pieces::Bishop(Position(2, 7), PieceColor::Black, brd));
+        addPiece(new Pieces::Bishop(Position(5, 7), PieceColor::Black, brd));
+        addPiece(new Pieces::Queen(Position(4, 7), PieceColor::Black, brd));
+        addPiece(new Pieces::King(Position(3, 7), PieceColor::Black, brd));
     }
 
     ImplBoard::ImplBoard(const ImplBoard& right)
         :
-        Pieces({}),
         MoveCounter(right.MoveCounter)
     {
         for (std::shared_ptr<MovablePiece> piece : right.Pieces)
@@ -275,46 +298,13 @@ namespace Chess
             break;
         }
 
-        Pieces[piece_id].swap(new_piece);
+        Pieces[piece_id] = new_piece;
     } 
-
-    void ImplBoard::reset()
-    {
-        MoveCounter = 0;
-
-        std::weak_ptr<Board> brd(std::shared_ptr<Board>(this));
-
-        for (int i = 0; i < 8; ++i)
-        {
-            addPiece(new Pieces::Pawn(Position(i, 1), PieceColor::White, brd));
-
-            addPiece(new Pieces::Pawn(Position(i, 6), PieceColor::Black, brd));
-        }
-
-        addPiece(new Pieces::Rook(Position(0, 0), PieceColor::White, brd));
-        addPiece(new Pieces::Rook(Position(7, 0), PieceColor::White, brd));
-        addPiece(new Pieces::Knight(Position(1, 0), PieceColor::White, brd));
-        addPiece(new Pieces::Knight(Position(6, 0), PieceColor::White, brd));
-        addPiece(new Pieces::Bishop(Position(2, 0), PieceColor::White, brd));
-        addPiece(new Pieces::Bishop(Position(5, 0), PieceColor::White, brd));
-        addPiece(new Pieces::Queen(Position(4, 0), PieceColor::White, brd));
-        addPiece(new Pieces::King(Position(3, 0), PieceColor::White, brd));
-
-        addPiece(new Pieces::Rook(Position(0, 7), PieceColor::Black, brd));
-        addPiece(new Pieces::Rook(Position(7, 7), PieceColor::Black, brd));
-        addPiece(new Pieces::Knight(Position(1, 7), PieceColor::Black, brd));
-        addPiece(new Pieces::Knight(Position(6, 7), PieceColor::Black, brd));
-        addPiece(new Pieces::Bishop(Position(2, 7), PieceColor::Black, brd));
-        addPiece(new Pieces::Bishop(Position(5, 7), PieceColor::Black, brd));
-        addPiece(new Pieces::Queen(Position(4, 7), PieceColor::Black, brd));
-        addPiece(new Pieces::King(Position(3, 7), PieceColor::Black, brd));
-    }
 
     void ImplBoard::addPiece(MovablePiece* piece)
     {
-        if (Pieces.size() == 0) 
-            Pieces = { std::shared_ptr<MovablePiece>(piece) };
-        else
-            Pieces.push_back(std::shared_ptr<MovablePiece>(piece));
+        std::shared_ptr<MovablePiece> sp_piece(piece);
+
+        Pieces.push_back(sp_piece);
     }
 }
