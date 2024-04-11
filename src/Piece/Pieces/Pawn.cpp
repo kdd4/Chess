@@ -77,6 +77,12 @@ namespace Chess
                         move = std::shared_ptr<ImplMove>(new ImplMove(board));
                         move->appendStep(this->pos, move_step);
                         move->appendAttack(move_step);
+
+                        if (move_step.y == 7)
+                        {
+                            move->changeType(pos, type, PieceType::Queen); // CHANGE IT
+                        }
+
                         vec.push_back(move);
                     }
                 }
@@ -111,10 +117,16 @@ namespace Chess
                         move = std::shared_ptr<ImplMove>(new ImplMove(board));
                         move->appendStep(this->pos, move_step);
                         move->appendAttack(move_step);
+
+                        if (move_step.y == 7)
+                        {
+                            move->changeType(pos, type, PieceType::Queen); // CHANGE IT
+                        }
+
                         vec.push_back(move);
                     }
                 }
-                else // attacked_place == nullptr
+                else // attacked_place = nullptr
                 {
                     attacked_place = board.lock()->getPiece(Position(pos.x - 1, pos.y));
                     if (attacked_place != nullptr)

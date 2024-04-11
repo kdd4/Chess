@@ -75,7 +75,7 @@ namespace Chess
         std::shared_ptr<Piece> ourKing = board->getPieces(PieceType::King, ourColor).at(0);
 
         board->makeMove(move);
-
+        
         // Checking the move
         PieceColor enemyColor = board->getMoveColor();
 
@@ -105,7 +105,7 @@ namespace Chess
                 break;
             }
         }
-
+        
         if (!endGame) return true;
 
         std::vector<std::shared_ptr<Move>> ourAttackMoves;
@@ -129,7 +129,7 @@ namespace Chess
                 break;
         }
         this->result = result;
-
+        
         return true;
     }
 

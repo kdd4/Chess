@@ -218,7 +218,7 @@ namespace Chess
                 throw std::logic_error("Piece isn't found");
             }
 
-            if (piece->getMoveCount() != MoveCounter - 1)
+            if (piece->getLastMoveMoment() != MoveCounter - 1)
                 continue;
 
             piece->pos = step.first;
@@ -234,7 +234,7 @@ namespace Chess
                 throw std::logic_error("Type changing failure");
             }
 
-            if (piece->getMoveCount() != MoveCounter - 1)
+            if (piece->getLastMoveMoment() != MoveCounter - 1)
                 continue;
 
             changeType(type_change.first, type_change.second.first);
@@ -247,7 +247,7 @@ namespace Chess
 
             if (attacked_piece == nullptr) continue;
 
-            if (attacked_piece->getMoveCount() != MoveCounter - 1)
+            if (attacked_piece->getLastMoveMoment() != MoveCounter - 1)
                 continue;
 
             if (attacked_piece->deleted == false)
