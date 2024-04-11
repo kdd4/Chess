@@ -3,9 +3,10 @@
 namespace Chess
 {
     ImplBoard::ImplBoard() :
-        MoveCounter(0)
+        MoveCounter(0),
+        this_ptr(std::shared_ptr<ImplBoard>(this))
     {
-        std::weak_ptr<Board> brd(std::shared_ptr<Board>(this));
+        std::weak_ptr<Board> brd(this_ptr);
 
         for (int i = 0; i < 8; ++i)
         {
@@ -35,23 +36,29 @@ namespace Chess
 
     ImplBoard::ImplBoard(const ImplBoard& right)
         :
-        MoveCounter(right.MoveCounter)
+        MoveCounter(right.MoveCounter),
+        this_ptr(std::shared_ptr<ImplBoard>(this))
     {
-        for (std::shared_ptr<MovablePiece> piece : right.Pieces)
+        for (std::shared_ptr<MovablePiece> piece : right.MovablePieces)
         {
-            Pieces.push_back(piece->clone(std::shared_ptr<Board>(this)));
+            MovablePieces.push_back(piece->clone(std::shared_ptr<Board>(this)));
         }
+    }
+
+    std::shared_ptr<ImplBoard> ImplBoard::getInstance() const
+    {
+        return this_ptr;
     }
 
     int ImplBoard::getPieceId(const Position& pos, int moveMoment, bool deleted) const
     {
-        for (int i = 0; i < Pieces.size(); ++i)
+        for (int i = 0; i < MovablePieces.size(); ++i)
         {
-            if (Pieces[i]->deleted != deleted) continue;
-            if (Pieces[i]->pos != pos) continue;
+            if (MovablePieces[i]->deleted != deleted) continue;
+            if (MovablePieces[i]->pos != pos) continue;
             if (moveMoment != -1)
             {
-                if (Pieces[i]->getLastMoveMoment() != moveMoment) continue;
+                if (MovablePieces[i]->getLastMoveMoment() != moveMoment) continue;
             }
             return i;
         }
@@ -62,12 +69,12 @@ namespace Chess
     {
         int id = getPieceId(pos, moveMoment, deleted);
 
-        return (id != -1) ? Pieces[id] : nullptr;
+        return (id != -1) ? MovablePieces.at(id) : nullptr;
     }
 
     void ImplBoard::getAttackMoves(std::vector<std::shared_ptr<Move>>& vec, const PieceColor color) const
     {
-        for (std::shared_ptr<MovablePiece> piece : Pieces)
+        for (std::shared_ptr<MovablePiece> piece : MovablePieces)
         {
             if (color != PieceColor::All)
             {
@@ -86,7 +93,7 @@ namespace Chess
     std::vector<std::shared_ptr<Piece>> ImplBoard::getPieces(PieceType type, PieceColor color) const
     {
         std::vector<std::shared_ptr<Piece>> vec;
-        for (std::shared_ptr<Piece> piece : Pieces)
+        for (std::shared_ptr<Piece> piece : MovablePieces)
         {
             if (piece == nullptr) continue;
             if (piece->deleted) continue;
@@ -127,7 +134,7 @@ namespace Chess
 
     void ImplBoard::getMoves(std::vector<std::shared_ptr<Move>>& vec, const PieceColor color) const
     {
-        for (std::shared_ptr<MovablePiece> piece : Pieces)
+        for (std::shared_ptr<MovablePiece> piece : MovablePieces)
         {
             if (color != PieceColor::All)
             {
@@ -263,7 +270,7 @@ namespace Chess
         if (piece_id == -1)
             throw std::logic_error("Type changing failure");
 
-        std::shared_ptr<MovablePiece>& piece = Pieces[piece_id];
+        std::shared_ptr<MovablePiece>& piece = MovablePieces[piece_id];
 
         std::shared_ptr<MovablePiece> new_piece;
 
@@ -298,13 +305,13 @@ namespace Chess
             break;
         }
 
-        Pieces[piece_id] = new_piece;
+        MovablePieces[piece_id] = new_piece;
     } 
 
     void ImplBoard::addPiece(MovablePiece* piece)
     {
         std::shared_ptr<MovablePiece> sp_piece(piece);
 
-        Pieces.push_back(sp_piece);
+        MovablePieces.push_back(sp_piece);
     }
 }

@@ -4,7 +4,7 @@ namespace Chess
 {
     Chess::Chess(PieceType (*getNewTypeWhite)(), PieceType (*getNewTypeBlack)())
         : 
-        board(new ImplBoard()),
+        board((new ImplBoard())->getInstance()),
         result(PieceColor::Null),
         getNewTypeWhite(getNewTypeWhite),
         getNewTypeBlack(getNewTypeBlack)
@@ -12,7 +12,7 @@ namespace Chess
 
     Chess::Chess(const Chess& right)
         : 
-        board(new ImplBoard(*(right.board))),
+        board((new ImplBoard(*(right.board)))->getInstance()),
         result(right.result),
         getNewTypeWhite(right.getNewTypeWhite),
         getNewTypeBlack(right.getNewTypeBlack)
