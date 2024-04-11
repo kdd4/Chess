@@ -72,19 +72,6 @@ namespace Chess
         return (id != -1) ? MovablePieces.at(id) : nullptr;
     }
 
-    void ImplBoard::getAttackMoves(std::vector<std::shared_ptr<Move>>& vec, const PieceColor color) const
-    {
-        for (std::shared_ptr<MovablePiece> piece : MovablePieces)
-        {
-            if (color != PieceColor::All)
-            {
-                if (piece->color != color)
-                    continue;
-            }
-            piece->getMoves(vec, true);
-        }
-    }
-
     std::shared_ptr<Piece> ImplBoard::getPiece(const Position& pos) const
     {
         return getMovablePiece(pos);
@@ -132,7 +119,7 @@ namespace Chess
         getMovablePiece(pos)->getMoves(vec);
     }
 
-    void ImplBoard::getMoves(std::vector<std::shared_ptr<Move>>& vec, const PieceColor color) const
+    void ImplBoard::getMoves(std::vector<std::shared_ptr<Move>>& vec, const PieceColor color, bool onlyAttack) const
     {
         for (std::shared_ptr<MovablePiece> piece : MovablePieces)
         {
@@ -141,7 +128,7 @@ namespace Chess
                 if (piece->color != color)
                     continue;
             }
-            piece->getMoves(vec);
+            piece->getMoves(vec, onlyAttack);
         }
     }
 

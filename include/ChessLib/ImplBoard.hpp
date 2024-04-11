@@ -26,7 +26,6 @@ namespace Chess
 
         int getPieceId(const Position& pos, int moveMoment = -1, bool deleted = false) const;
         std::shared_ptr<MovablePiece> getMovablePiece(const Position& pos, int moveMoment = -1, bool deleted = false) const;
-        void getAttackMoves(std::vector<std::shared_ptr<Move>>& vec, const PieceColor color = PieceColor::All) const;
 
         // Overrided functions
 
@@ -35,7 +34,7 @@ namespace Chess
 
         std::shared_ptr<Move> getMove(const Position& start_pos, const Position& end_pos) const override;
         void getMoves(const Position& pos, std::vector<std::shared_ptr<Move>>& vec) const override;
-        void getMoves(std::vector<std::shared_ptr<Move>>& vec, const PieceColor color = PieceColor::All) const override;
+        void getMoves(std::vector<std::shared_ptr<Move>>& vec, const PieceColor color = PieceColor::All, bool onlyAttack = false) const override;
 
         PieceColor getMoveColor() const override;
         int getMoveCount() const override;

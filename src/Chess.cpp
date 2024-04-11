@@ -109,7 +109,7 @@ namespace Chess
         if (!endGame) return true;
 
         std::vector<std::shared_ptr<Move>> ourAttackMoves;
-        board->getAttackMoves(ourAttackMoves, ourColor);
+        board->getMoves(ourAttackMoves, ourColor, true);
 
         std::shared_ptr<Piece> enemyKing = board->getPieces(PieceType::King, enemyColor).at(0);
 
@@ -145,7 +145,7 @@ namespace Chess
         // Checking the move
         std::vector<std::shared_ptr<Move>> enemyMoves;
         PieceColor enemyColor = board->getMoveColor();
-        board->getAttackMoves(enemyMoves, enemyColor);
+        board->getMoves(enemyMoves, enemyColor, true);
 
         bool check = true;
         for (std::shared_ptr<Move>& enemyMove : enemyMoves)

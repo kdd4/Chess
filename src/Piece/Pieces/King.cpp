@@ -86,10 +86,10 @@ namespace Chess
             std::vector<Position> checkingPosition = { Position(pos.x - 1, pos.y), Position(pos.x - 2, pos.y) };
             PieceColor enemyColor = (color == PieceColor::White) ? PieceColor::Black : PieceColor::White;
 
-            std::vector<std::shared_ptr<Move>> enemyMoves;
-            board.lock()->getMoves(enemyMoves, enemyColor);
+            std::vector<std::shared_ptr<Move>> enemyAttackMoves;
+            board.lock()->getMoves(enemyAttackMoves, enemyColor, true);
 
-            for (std::shared_ptr<Move>& enemyMove : enemyMoves)
+            for (std::shared_ptr<Move>& enemyMove : enemyAttackMoves)
             {
                 for (const Position& attacked_pos : enemyMove->getAttackedPositions())
                 {
@@ -128,10 +128,10 @@ namespace Chess
             std::vector<Position> checkingPosition = { Position(pos.x + 1, pos.y), Position(pos.x + 2, pos.y) };
             PieceColor enemyColor = (color == PieceColor::White) ? PieceColor::Black : PieceColor::White;
 
-            std::vector<std::shared_ptr<Move>> enemyMoves;
-            board.lock()->getMoves(enemyMoves, enemyColor);
+            std::vector<std::shared_ptr<Move>> enemyAttackMoves;
+            board.lock()->getMoves(enemyAttackMoves, enemyColor, true);
 
-            for (std::shared_ptr<Move>& enemyMove : enemyMoves)
+            for (std::shared_ptr<Move>& enemyMove : enemyAttackMoves)
             {
                 for (const Position& attacked_pos : enemyMove->getAttackedPositions())
                 {
