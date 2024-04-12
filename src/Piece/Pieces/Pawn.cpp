@@ -46,7 +46,7 @@ namespace Chess
                     move = std::shared_ptr<ImplMove>(new ImplMove(board));
                     move->appendStep(this->pos, move_step);
 
-                    if (move_step.y == 7)
+                    if (move_step.y == 7 || move_step.y == 0)
                     {
                         move->changeType(pos, type, PieceType::Queen); // CHANGE IT
                     }
@@ -78,7 +78,7 @@ namespace Chess
                         move->appendStep(this->pos, move_step);
                         move->appendAttack(move_step);
 
-                        if (move_step.y == 7)
+                        if (move_step.y == 7 || move_step.y == 0)
                         {
                             move->changeType(pos, type, PieceType::Queen); // CHANGE IT
                         }
@@ -118,7 +118,7 @@ namespace Chess
                         move->appendStep(this->pos, move_step);
                         move->appendAttack(move_step);
 
-                        if (move_step.y == 7)
+                        if (move_step.y == 7 || move_step.y == 0)
                         {
                             move->changeType(pos, type, PieceType::Queen); // CHANGE IT
                         }
