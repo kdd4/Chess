@@ -159,7 +159,7 @@ namespace Chess
                 }
             }
 
-            if (check) break;
+            if (!check) break;
         }
 
         // Canceling the move
