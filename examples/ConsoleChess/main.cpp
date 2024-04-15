@@ -5,9 +5,9 @@
 
 using namespace std;
 
-void draw(Chess::Game& game)
+void draw(Chess::Chess& game)
 {
-    map<int, string> FigCh = {{1, "P "}, {2, "R "}, {3, "Kn"}, {4, "B "}, {5, "Q "}, {6, "K "}};
+    map<int, string> FigCh = {{2, "P "}, {3, "R "}, {4, "Kn"}, {5, "B "}, {6, "Q "}, {7, "K "}};
     system("cls");
 
     std::cout << "  ";
@@ -16,7 +16,7 @@ void draw(Chess::Game& game)
         std::cout << ' ' << i << ' ';
     }
     std::cout   << "\t Move color: "
-                << ((game.getBoard().moveColor == Chess::Color::Black) ? "Black" : "White")
+                << ((game.getBoard()->getMoveColor() == Chess::PieceColor::Black) ? "Black" : "White")
                 << "\n\n";
 
     for (int i = 0; i < 8; ++i)
@@ -24,11 +24,11 @@ void draw(Chess::Game& game)
         std::cout << i << " ";
         for (int j = 0; j < 8; ++j)
         {
-            const Chess::Figure* fig = game.get(Chess::Position(j, i));
-            if (fig != nullptr)
+            const std::shared_ptr<Chess::Piece> piece = game.get(Chess::Position(j, i));
+            if (piece != nullptr)
             {
-                std::cout   << ((fig->color == Chess::Color::Black) ? " \x1B[37m" : " \033[2;47;30m")
-                            << FigCh[(long long)(fig->type)]
+                std::cout   << ((piece->color == Chess::PieceColor::Black) ? " \x1B[37m" : " \033[2;47;30m")
+                            << FigCh[(long long)(piece->type)]
                             << "\033[0m";
             }
             else
@@ -40,11 +40,11 @@ void draw(Chess::Game& game)
 
 int main()
 {
-    Chess::Figures::Type (*getNewTypeWhite)() = []() -> Chess::Figures::Type { return Chess::Figures::Type::Queen;};
-    Chess::Figures::Type (*getNewTypeBlack)() = []() -> Chess::Figures::Type { return Chess::Figures::Type::Queen;};
+    Chess::PieceType (*getNewTypeWhite)() = []() -> Chess::PieceType { return Chess::PieceType::Queen;};
+    Chess::PieceType (*getNewTypeBlack)() = []() -> Chess::PieceType { return Chess::PieceType::Queen;};
 
-    Chess::Game game(getNewTypeWhite, getNewTypeBlack);
-    while (game.getResult() == Chess::Color::Null)
+    Chess::Chess game(getNewTypeWhite, getNewTypeBlack);
+    while (game.getResult() == Chess::PieceColor::Null)
     {
         draw(game);
         int x1, y1, x2, y2;
@@ -57,7 +57,7 @@ int main()
     draw(game);
 
     std::cout   << "\nWin "
-                << ((game.getResult() == Chess::Color::Black) ? "Black" : "White")
+                << ((game.getResult() == Chess::PieceColor::Black) ? "Black" : "White")
                 << "\n";
 
     return 0;

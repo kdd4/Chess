@@ -2,256 +2,170 @@
 
 namespace Chess
 {
-    Game::Game(Figures::Type (*getNewTypeWhite)(), Figures::Type (*getNewTypeBlack)())
-        : board(new Board()), getNewTypeWhite(getNewTypeWhite), getNewTypeBlack(getNewTypeBlack) {}
+    Chess::Chess(PieceType (*getNewTypeWhite)(), PieceType (*getNewTypeBlack)())
+        : 
+        board((new ImplBoard())->getInstance()),
+        result(PieceColor::Null),
+        getNewTypeWhite(getNewTypeWhite),
+        getNewTypeBlack(getNewTypeBlack)
+    {}
 
-    Game::Game(const Game& right)
-        : board(new Board(*right.board)), getNewTypeWhite(right.getNewTypeWhite), getNewTypeBlack(right.getNewTypeBlack) {}
+    Chess::Chess(const Chess& right)
+        : 
+        board((new ImplBoard(*(right.board)))->getInstance()),
+        result(right.result),
+        getNewTypeWhite(right.getNewTypeWhite),
+        getNewTypeBlack(right.getNewTypeBlack)
+    {}
 
-    Game::~Game()
+    const std::shared_ptr<Piece> Chess::get(Position pos) const
     {
-        board->~Board();
+        return board->getPiece(pos);
     }
 
-    const Figure* Game::get(Position pos) const
+    PieceColor Chess::getResult() const
     {
-        return board->getFigure(pos);
+        return result;
     }
 
-    int Game::getResult() const
+    const std::shared_ptr<Board> Chess::getBoard() const
     {
-        return board->result;
+        return board;
     }
 
-    const Board& Game::getBoard() const
+    Chess& Chess::operator=(const Chess& right)
     {
-        return *board;
-    }
-
-    Game& Game::operator=(const Game& right)
-    {
-        delete this->board;
-        this->board = new Board(*right.board);
+        board = std::shared_ptr<ImplBoard>(new ImplBoard(*right.board));
         this->getNewTypeWhite = right.getNewTypeWhite;
         this->getNewTypeBlack = right.getNewTypeBlack;
 
         return *this;
     }
 
-    void Game::makeMove(Move& moving)
-    {
-        if (moving.attackedFigure != nullptr) moving.attackedFigure->deleted = true;
-
-        Figure* figure = board->getFigure(moving.moving.figurePos);
-        if (figure != moving.moving.figure) throw excLogicalError();
-        figure->pos = moving.moving.newPos;
-        figure->prevLastMoveMoment = figure->lastMoveMoment;
-        figure->lastMoveMoment = board->moveCounter;
-        figure->moveCount += 1;
-
-        for (MoveEvent& event : moving.additionalMoving)
-        {
-            figure = board->getFigure(event.figurePos);
-            if (event.figure != figure) throw excLogicalError();
-            figure->pos = event.newPos;
-            figure->prevLastMoveMoment = figure->lastMoveMoment;
-            figure->lastMoveMoment = board->moveCounter;
-            figure->moveCount += 1;
-        }
-    }
-
-    void Game::cancelMove(Move& moving)
-    {
-        if (moving.attackedFigure != nullptr) moving.attackedFigure->deleted = false;
-
-        Figure* figure = board->getFigure(moving.moving.newPos);
-        if (figure != moving.moving.figure) throw excLogicalError();
-        figure->pos = moving.moving.figurePos;
-        figure->lastMoveMoment = figure->prevLastMoveMoment;
-        figure->prevLastMoveMoment = -1;
-        figure->moveCount -= 1;
-
-        for (MoveEvent& event : moving.additionalMoving)
-        {
-            figure = board->getFigure(event.newPos);
-            if (event.figure != figure) throw excLogicalError();
-            figure->pos = event.figurePos;
-            figure->lastMoveMoment = figure->prevLastMoveMoment;
-            figure->prevLastMoveMoment = -1;
-            figure->moveCount -= 1;
-        }
-    }
-
-    bool Game::moving(Position pos1, Position pos2)
+    bool Chess::moving(Position pos1, Position pos2)
     {
         // Checking for correct positions
         if (!pos1.check() || !pos2.check()) return false;
 
-        Figure*& movingFigure = board->getFigure(pos1);
-        if (movingFigure == nullptr) return false;
-        if (movingFigure->color != board->moveColor) return false;
+        std::shared_ptr<MovablePiece> movingPiece = board->getMovablePiece(pos1);
+        if (movingPiece == nullptr) return false;
+        if (movingPiece->color != board->getMoveColor()) return false;
 
         // Search for a move
-        std::vector<Move> possibleMoves;
-        movingFigure->getMoves(possibleMoves);
+        std::vector<std::shared_ptr<Move>> moves;
+        movingPiece->getMoves(moves);
 
-        Move moving;
-        bool flFound = false;
-        for (Move& mv : possibleMoves)
+        std::shared_ptr<Move> move;
+        for (std::shared_ptr<Move> ref_move : moves)
         {
-            if (mv.moving.newPos == pos2)
+            try
             {
-                moving = mv;
-                flFound = true;
+                if (ref_move->getSteps().at(pos1) != pos2) 
+                    continue;
+
+                move = ref_move;
                 break;
             }
-        }
-        if (!flFound)
-        {
-            return false;
+            catch (std::out_of_range&) {}
         }
 
-        if (!checkMove(movingFigure, moving)) return false;
+        if (!move) return false;
 
-        // Making the move
-        makeMove(moving);
+        PieceColor ourColor = board->getMoveColor();
+        std::shared_ptr<Piece> ourKing = board->getPieces(PieceType::King, ourColor).at(0);
 
-        if (movingFigure->type == Figures::Type::Pawn)
+        board->makeMove(move);
+        
+        // Checking the move
+        PieceColor enemyColor = board->getMoveColor();
+
+        std::vector<std::shared_ptr<Move>> enemyMoves;
+        board->getMoves(enemyMoves, enemyColor);
+
+        for (std::shared_ptr<Move>& enemyMove : enemyMoves)
         {
-            if (movingFigure->pos.y == 0 || movingFigure->pos.y == 7)
+            for (const Position& attackedPos : enemyMove->getAttackedPositions())
             {
-                Figures::Type newType = Figures::Type::Pawn;
-                while(newType == Figures::Type::Pawn || newType == Figures::Type::King)
-                    newType = (board->moveColor == Color::White) ? getNewTypeWhite() : getNewTypeBlack();
-
-                Figure* prevFig = movingFigure;
-                updateFigure(movingFigure, newType);
-                delete prevFig;
+                if (attackedPos == ourKing->pos)
+                {
+                    board->cancelMove(move);
+                    return false;
+                }
             }
         }
-
-        board->moveColor *= -1;
-        board->moveCounter += 1;
-        board->update();
 
         // End-of-game check
         bool endGame = true;
-        for (Figure* enemyFigure : board->findFigures(Figures::Type::Null, board->moveColor))
+
+        for (std::shared_ptr<Move>& enemyMove : enemyMoves)
         {
-            std::vector<Move> moves;
-            enemyFigure->getMoves(moves);
-
-            for (Move& mv : moves)
+            if (checkMove(enemyMove))
             {
-                if (checkMove(enemyFigure, mv))
-                {
-                    endGame = false;
-                    break;
-                }
-            }
-            if (!endGame) break;
-        }
-
-        if (endGame)
-        {
-            std::vector<Move> ourMoves = board->getAllMoves(board->findFigures(Figures::Type::Null, board->moveColor*(-1)), true);
-            Figure* enemyKing = board->findFigures(Figures::Type::King, board->moveColor)[0];
-
-            int result = Color::Both;
-            for (Move& mv : ourMoves)
-            {
-                if (mv.attackedFigure == nullptr) continue;
-                if (enemyKing == mv.attackedFigure)
-                {
-                    result = board->moveColor*(-1);
-                    break;
-                }
-            }
-            board->result = result;
-        }
-
-        return true;
-    }
-
-    bool Game::checkMove(Figure* movingFigure, Move& moving)
-    {
-        // Making the move
-        makeMove(moving);
-
-        Figure* prevFig = nullptr;
-        if (movingFigure->type == Figures::Type::Pawn)
-        {
-            if (movingFigure->pos.y == 0 || movingFigure->pos.y == 7)
-            {
-                Figures::Type newType = Figures::Type::Pawn;
-                while(newType == Figures::Type::Pawn || newType == Figures::Type::King)
-                    newType = (board->moveColor == Color::White) ? getNewTypeWhite() : getNewTypeBlack();
-                prevFig = movingFigure;
-                updateFigure(movingFigure, newType);
-            }
-        }
-
-        board->moveColor *= -1;
-        board->moveCounter += 1;
-        board->update();
-
-        // Checking the move
-        std::vector<Move> enemyMoves = board->getAllMoves(board->findFigures(Figures::Type::Null, board->moveColor), true);
-        Figure* ourKing = board->findFigures(Figures::Type::King, board->moveColor*(-1))[0];
-
-        bool check = true;
-        for (Move& mv : enemyMoves)
-        {
-            if (ourKing == mv.attackedFigure)
-            {
-                check = false;
+                endGame = false;
                 break;
             }
         }
+        
+        if (!endGame) return true;
 
-        // Canceling the move
-        cancelMove(moving);
+        std::vector<std::shared_ptr<Move>> ourAttackMoves;
+        board->getMoves(ourAttackMoves, ourColor, true);
 
-        if (prevFig != nullptr)
+        std::shared_ptr<Piece> enemyKing = board->getPieces(PieceType::King, enemyColor).at(0);
+
+        PieceColor result = PieceColor::All;
+        for (std::shared_ptr<Move>& outAttackMove : ourAttackMoves)
         {
-            delete movingFigure;
-            movingFigure = prevFig;
+            for (const Position& attackedPos : outAttackMove->getAttackedPositions())
+            {
+                if (attackedPos == enemyKing->pos)
+                {
+                    result = ourColor;
+                    break;
+                }
+            }
+
+            if (result != PieceColor::All)
+                break;
         }
-
-        board->moveColor *= -1;
-        board->moveCounter -= 1;
-        board->update();
-
-        return check;
+        this->result = result;
+        
+        return true;
     }
 
-    void Game::updateFigure(Figure*& figure, Figures::Type newType)
+    
+    bool Chess::checkMove(std::shared_ptr<Move> move)
     {
-        Figure* newFigure;
-        switch(newType)
+        // Getting our king
+        std::shared_ptr<Piece> ourKing = board->getPieces(PieceType::King, board->getMoveColor()).at(0);
+
+        // Making the move
+        board->makeMove(move);
+
+        // Checking the move
+        std::vector<std::shared_ptr<Move>> enemyMoves;
+        PieceColor enemyColor = board->getMoveColor();
+        board->getMoves(enemyMoves, enemyColor, true);
+
+        bool check = true;
+        for (std::shared_ptr<Move>& enemyMove : enemyMoves)
         {
-        case Figures::Type::Pawn:
-            newFigure = new Figures::Pawn(figure->pos, figure->color, figure->board, figure->moveCount, figure->lastMoveMoment, figure->prevLastMoveMoment, figure->deleted);
-            break;
-        case Figures::Type::Rook:
-            newFigure = new Figures::Rook(figure->pos, figure->color, figure->board, figure->moveCount, figure->lastMoveMoment, figure->prevLastMoveMoment, figure->deleted);
-            break;
-        case Figures::Type::Knight:
-            newFigure = new Figures::Knight(figure->pos, figure->color, figure->board, figure->moveCount, figure->lastMoveMoment, figure->prevLastMoveMoment, figure->deleted);
-            break;
-        case Figures::Type::Bishop:
-            newFigure = new Figures::Bishop(figure->pos, figure->color, figure->board, figure->moveCount, figure->lastMoveMoment, figure->prevLastMoveMoment, figure->deleted);
-            break;
-        case Figures::Type::Queen:
-            newFigure = new Figures::Queen(figure->pos, figure->color, figure->board, figure->moveCount, figure->lastMoveMoment, figure->prevLastMoveMoment, figure->deleted);
-            break;
-        case Figures::Type::King:
-            newFigure = new Figures::King(figure->pos, figure->color, figure->board, figure->moveCount, figure->lastMoveMoment, figure->prevLastMoveMoment, figure->deleted);
-            break;
-        default:
-            throw excLogicalError();
+            for (const Position& attackedPos : enemyMove->getAttackedPositions())
+            {
+                if (attackedPos == ourKing->pos)
+                {
+                    check = false;
+                    break;
+                }
+            }
+
+            if (!check) break;
         }
-        figure = newFigure;
+
+        // Canceling the move
+        board->cancelMove(move);
+
+        return check;
     }
 }
 

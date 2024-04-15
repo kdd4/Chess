@@ -23,7 +23,7 @@ endif()
 project(ChessLib VERSION 1.0.0 LANGUAGES CXX)
 
 include(ChessLibConfig.cmake)
-							
+
 option(BUILD_EXAMPLES "Build examples" ON)
 if(BUILD_EXAMPLES)
 	add_subdirectory(examples)

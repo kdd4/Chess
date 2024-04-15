@@ -3,8 +3,8 @@
 namespace Chess
 {
     Position::Position() :
-        x(-1),
-        y(-1)
+        x(0),
+        y(0)
     {}
 
     Position::Position(int x, int y) :
@@ -25,6 +25,11 @@ namespace Chess
     bool Position::operator!=(const Position& right) const
     {
         return !(x == right.x && y == right.y);
+    }
+
+    bool Position::operator<(const Position& right) const
+    {
+        return (y == right.y) ? x < right.x : y < right.y;
     }
 
     bool Position::check() const

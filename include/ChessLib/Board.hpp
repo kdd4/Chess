@@ -1,49 +1,32 @@
 #pragma once
 
-#include "Defines.hpp"
+#include "ChessLib/Piece/Piece.hpp"
+#include "ChessLib/Move.hpp"
 
-#include "Figure.hpp"
-#include "Figures.hpp"
-#include "Position.hpp"
-#include "Move.hpp"
+#include "ChessLib/Piece/Enums.hpp"
+#include "ChessLib/Position.hpp"
 
 #include <vector>
+#include <memory>
 
 namespace Chess
 {
-    class Board
-    {
-    public:
-        Board();
-        Board(const Board& right);
-        ~Board();
+	class IBoard
+	{
+	public:
+		virtual std::shared_ptr<Piece> getPiece(const Position& pos) const = 0;
+		virtual std::vector<std::shared_ptr<Piece>> getPieces(PieceType type, PieceColor color) const = 0;
 
-        Figure*& getFigure(const Position& pos);
-        const Figure*& getFigure(const Position& pos) const;
+		virtual std::shared_ptr<Move> getMove(const Position& start_pos, const Position& end_pos) const = 0;
+		virtual void getMoves(const Position& pos, std::vector<std::shared_ptr<Move>>& vec) const = 0;
+		virtual void getMoves(std::vector<std::shared_ptr<Move>>& vec, const PieceColor color = PieceColor::All, bool onlyAttack = false) const = 0;
 
-        std::vector<Figure*>& getFigures();
-        const std::vector<Figure*>& getFigures() const;
+		virtual PieceColor getMoveColor() const = 0;
+		virtual int getMoveCount() const = 0;
 
-        std::vector<Move> getAllMoves(const std::vector<Figure*>& vec, bool onlyAttack = false) const;
-        std::vector<Figure*> findFigures(Figures::Type type, int color) const;
+		virtual void makeMove(const std::shared_ptr<Move> move) = 0;
+		virtual void cancelMove(const std::shared_ptr<Move> move) = 0;
+	};
 
-        int result;
-        int moveColor;
-        int moveCounter;
-
-        void update();
-
-    private:
-        void addFigure(Figure* figure);
-
-        std::vector<Figure*> figures = {nullptr};
-
-        unsigned int** boardMap = nullptr;
-        void buildBoardMap();
-        void clearBoardMap();
-        void clearFigures();
-
-        void setDefaultFigures();
-    };
+	typedef IBoard Board;
 }
-

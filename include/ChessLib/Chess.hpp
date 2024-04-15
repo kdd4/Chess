@@ -1,41 +1,36 @@
 #pragma once
 
 #include <vector>
-#include "Defines.hpp"
-#include "Board.hpp"
-#include "Figures.hpp"
-#include "Move.hpp"
+
+#include "ChessLib/Piece/Enums.hpp"
+#include "ChessLib/ImplBoard.hpp"
+#include "ChessLib/Piece/Pieces.hpp"
+#include "ChessLib/Move.hpp"
 
 namespace Chess
 {
-    class Game
+    class Chess
     {
     public:
-        Game(Figures::Type (*getNewTypeWhite)(), Figures::Type (*getNewTypeBlack)());
-        Game(const Game& right);
-        ~Game();
+        Chess(PieceType (*getNewTypeWhite)(), PieceType (*getNewTypeBlack)());
+        Chess(const Chess& right);
 
-        const Figure* get(Position pos) const;
-        int getResult() const;
-        const Board& getBoard() const;
+        const std::shared_ptr<Piece> get(Position pos) const;
+        PieceColor getResult() const;
+        const std::shared_ptr<Board> getBoard() const;
 
-        Game& operator=(const Game& right);
+        Chess& operator=(const Chess& right);
 
         bool moving(Position pos1, Position pos2);
 
     private:
-        Board* board;
+        std::shared_ptr<ImplBoard> board;
+        PieceColor result;
 
-        Figures::Type (*getNewTypeWhite)();
-        Figures::Type (*getNewTypeBlack)();
+        PieceType (*getNewTypeWhite)();
+        PieceType (*getNewTypeBlack)();
 
-        void makeMove(Move& moving);
-        void cancelMove(Move& moving);
-
-        // Checking the possibility of making a move without changing the board
-        bool checkMove(Figure* movingFigure, Move& moving);
-
-        void updateFigure(Figure*& figure, Figures::Type newType);
+        bool checkMove(std::shared_ptr<Move> move);
     };
 }
 

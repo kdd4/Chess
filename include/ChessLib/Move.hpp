@@ -1,34 +1,24 @@
 #pragma once
 
-#include "Position.hpp"
-#include "Figure.hpp"
-#include "Board.hpp"
+#include "ChessLib/Piece/Enums.hpp"
+#include "ChessLib/Position.hpp"
 
-#include <vector>
+#include <map>
+#include <set>
 
 namespace Chess
 {
-    struct MoveEvent
+    class IMove
     {
-        MoveEvent();
-        MoveEvent(const Figure* figure, const Position& newPos);
+    public:
+        virtual const std::map<Position, Position>& getSteps() const = 0;
+        virtual const std::set<Position>& getAttackedPositions() const = 0;
+        virtual const std::map<Position, std::pair<PieceType, PieceType>>& getTypeChanges() const = 0; // old and new types
 
-        const Figure* figure;
-        Position figurePos;
-        Position newPos;
+        virtual int getMoveCount() const = 0;
     };
 
-    struct Move
-    {
-        Move();
-        Move(const Figure* figure, const Position& newPos);
-        Move(const Figure* figure, const Position& newPos, const Position& attackedPos);
-        Move(const Figure* figure, const Position& newPos, Figure* attackedFigure);
-
-        void addAdditionalMove(MoveEvent event);
-
-        Figure* attackedFigure;
-        MoveEvent moving;
-        std::vector<MoveEvent> additionalMoving;
-    };
+    typedef IMove Move;
 }
+
+
